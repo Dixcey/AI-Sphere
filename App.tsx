@@ -600,10 +600,10 @@ export default function App() {
                         rightLabel="Enthusiastic"
                       />
                       <SentimentBar
-                        label="Equity"
-                        value={sentimentScores.equity}
-                        leftLabel="Indifferent"
-                        rightLabel="Champion"
+                        label="Trust vs. Risk"
+                        value={sentimentScores.trust}
+                        leftLabel="High Risk"
+                        rightLabel="High Trust"
                       />
                       <SentimentBar
                         label="AI Agents"

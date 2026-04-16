@@ -26,7 +26,7 @@ Return scores as follows:
 - trends: their overall outlook on AI progress ("optimistic", "pessimistic", or "neutral")
 - regulation: a number from -1 (strongly against AI regulation) to 1 (strongly pro AI regulation)
 - usage: a number from -1 (very restrictive/cautious about AI use) to 1 (highly enthusiastic about broad AI usage)
-- equity: a number from -1 (indifferent to AI equity/fairness) to 1 (strong champion of AI equity)
+- trust: a number from -1 (perceives AI as very high risk / existential danger) to 1 (high trust in AI safety and development)
 - agent: a number from -1 (skeptical of AI agents) to 1 (very bullish on AI agents)
 
 Base your inference on their role, bio, and focus areas. If truly ambiguous, use 0.`;
@@ -43,7 +43,7 @@ Base your inference on their role, bio, and focus areas. If truly ambiguous, use
             trends: { type: Type.STRING, description: "optimistic, pessimistic, or neutral" },
             regulation: { type: Type.NUMBER, description: "-1 to 1" },
             usage: { type: Type.NUMBER, description: "-1 to 1" },
-            equity: { type: Type.NUMBER, description: "-1 to 1" },
+            trust: { type: Type.NUMBER, description: "-1 to 1" },
             agent: { type: Type.NUMBER, description: "-1 to 1" },
           },
           required: ["trends", "regulation", "usage", "equity", "agent"],
@@ -58,7 +58,7 @@ Base your inference on their role, bio, and focus areas. If truly ambiguous, use
         trends: ['optimistic', 'pessimistic', 'neutral'].includes(parsed.trends) ? parsed.trends : 'neutral',
         regulation: clamp(parsed.regulation ?? 0),
         usage: clamp(parsed.usage ?? 0),
-        equity: clamp(parsed.equity ?? 0),
+        trust: clamp(parsed.trust ?? 0),
         agent: clamp(parsed.agent ?? 0),
       };
     }

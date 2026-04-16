@@ -37,7 +37,7 @@ export interface SentimentScores {
   trends: 'optimistic' | 'pessimistic' | 'neutral';
   regulation: number;  // -1 (against) to 1 (pro)
   usage: number;       // -1 (restrictive) to 1 (enthusiastic)
-  equity: number;      // -1 (indifferent) to 1 (champion)
+  trust: number;       // -1 (high risk perceived) to 1 (high trust in AI)
   agent: number;       // -1 (skeptical) to 1 (bullish)
 }
 
