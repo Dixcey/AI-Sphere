@@ -1,8 +1,9 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import Graph3D from './components/Graph3D';
 import { INITIAL_DATA, LAST_UPDATED } from './constants';
-import { GraphData, GraphNode } from './types';
-import { X as XIcon, ExternalLink, Building2, Link2, ChevronLeft, ChevronRight, Menu, Calendar, BadgeCheck, MapPin, Search, HelpCircle } from 'lucide-react';
+import { GraphData, GraphNode, SentimentScores } from './types';
+import { analyzeSentiment } from './services/geminiService';
+import { X as XIcon, Link2, ChevronLeft, ChevronRight, Menu, Calendar, BadgeCheck, MapPin, Search, HelpCircle } from 'lucide-react';
 
 // Creator profile
 const CREATOR_PROFILE: GraphNode = {
@@ -31,6 +32,11 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
+  // Sentiment Analysis State
+  const [sentimentScores, setSentimentScores] = useState<SentimentScores | null>(null);
+  const [sentimentLoading, setSentimentLoading] = useState(false);
+  const sentimentCache = useRef<Map<string, SentimentScores>>(new Map());
+
   // Refs for scrolling
   const listContainerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
@@ -50,11 +56,13 @@ export default function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Only show individual categories — exclude company and media
+  const INDIVIDUAL_GROUPS = new Set(['founder', 'researcher', 'investor']);
+
   // 1. Calculate Statistics & Sort Nodes by Followers (or connections as fallback)
   const sortedNodes = useMemo(() => {
     const counts = new Map<string, number>();
 
-    // Count connections for each node ID
     data.links.forEach(link => {
         const s = typeof link.source === 'object' ? (link.source as any).id : link.source;
         const t = typeof link.target === 'object' ? (link.target as any).id : link.target;
@@ -62,11 +70,12 @@ export default function App() {
         counts.set(t, (counts.get(t) || 0) + 1);
     });
 
-    // Attach count to node copy and sort by followers (or connections as fallback)
-    return [...data.nodes].map(node => ({
+    return [...data.nodes]
+      .filter(node => INDIVIDUAL_GROUPS.has(node.group))
+      .map(node => ({
         ...node,
         val: counts.get(node.id) || 0
-    })).sort((a, b) => (b.followers || b.val || 0) - (a.followers || a.val || 0));
+      })).sort((a, b) => (b.followers || b.val || 0) - (a.followers || a.val || 0));
 
   }, [data]);
 
@@ -109,16 +118,17 @@ export default function App() {
     return nodes;
   }, [sortedNodes, searchQuery, selectedCategory]);
 
-  // Build filtered graph data for the 3D view when a category is selected
+  // Build filtered graph data — always exclude company/media, optionally filter by category
   const filteredGraphData = useMemo(() => {
-    if (!selectedCategory) return data;
+    const baseNodes = data.nodes.filter(n => INDIVIDUAL_GROUPS.has(n.group));
+    const baseNodeIds = new Set(baseNodes.map(n => n.id));
 
-    const filteredNodeIds = new Set(
-      data.nodes.filter(n => n.group === selectedCategory).map(n => n.id)
-    );
+    const filteredNodeIds = selectedCategory
+      ? new Set(baseNodes.filter(n => n.group === selectedCategory).map(n => n.id))
+      : baseNodeIds;
 
     return {
-      nodes: data.nodes.filter(n => filteredNodeIds.has(n.id)),
+      nodes: baseNodes.filter(n => filteredNodeIds.has(n.id)),
       links: data.links.filter(link => {
         const sId = typeof link.source === 'object' ? (link.source as any).id : link.source;
         const tId = typeof link.target === 'object' ? (link.target as any).id : link.target;
@@ -135,8 +145,54 @@ export default function App() {
     }
   }, [selectedNode]);
 
+  // Fetch sentiment when a node is selected
+  useEffect(() => {
+    if (!selectedNode) {
+      setSentimentScores(null);
+      return;
+    }
+    const cached = sentimentCache.current.get(selectedNode.id);
+    if (cached) {
+      setSentimentScores(cached);
+      return;
+    }
+    setSentimentScores(null);
+    setSentimentLoading(true);
+    analyzeSentiment(selectedNode).then(scores => {
+      setSentimentLoading(false);
+      if (scores) {
+        sentimentCache.current.set(selectedNode.id, scores);
+        setSentimentScores(scores);
+      }
+    });
+  }, [selectedNode?.id]);
+
   const nodeCount = data?.nodes?.length || 0;
   const linkCount = data?.links?.length || 0;
+
+  // Sentiment bar for a single dimension
+  const SentimentBar = ({ label, value, leftLabel, rightLabel }: {
+    label: string; value: number; leftLabel: string; rightLabel: string;
+  }) => {
+    const pct = ((value + 1) / 2) * 100;
+    return (
+      <div className="mb-3">
+        <div className="flex justify-between items-center mb-1">
+          <span className="text-xs font-medium text-slate-300">{label}</span>
+        </div>
+        <div className="relative h-1.5 bg-slate-700/60 rounded-full">
+          <div
+            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-indigo-400 shadow-[0_0_6px_rgba(129,140,248,0.8)] transition-all duration-500"
+            style={{ left: `${pct}%` }}
+          />
+        </div>
+        <div className="flex justify-between mt-1">
+          <span className="text-[10px] text-slate-500">{leftLabel}</span>
+          <span className="text-[10px] text-slate-500">{rightLabel}</span>
+        </div>
+      </div>
+    );
+  };
 
   const handleNodeClick = (node: GraphNode) => {
     setShowCreatorCard(false);
@@ -419,11 +475,6 @@ export default function App() {
                                     onError={handleImageError}
                                     className="w-20 h-20 rounded-full border-4 border-[#090A10] object-cover bg-slate-800 shadow-lg"
                                 />
-                                {selectedNode.group === 'company' && (
-                                    <div className="absolute -bottom-1 -right-1 bg-[#090A10] rounded-full p-1">
-                                        <Building2 className="w-4 h-4 text-amber-400" />
-                                    </div>
-                                )}
                             </div>
 
                             {/* Follow Button */}
@@ -502,6 +553,72 @@ export default function App() {
                         )}
                     </div>
                 </div>
+
+                {/* Sentiment Analysis Card */}
+                <div className="bg-[#090A10]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl pointer-events-auto p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-white">AI Sentiment Analysis</h3>
+                    {sentimentLoading && (
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                    )}
+                  </div>
+
+                  {sentimentLoading && !sentimentScores && (
+                    <p className="text-xs text-slate-500 italic">Analyzing profile…</p>
+                  )}
+
+                  {sentimentScores && (
+                    <>
+                      {/* AI Trends badge */}
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="text-xs text-slate-400">AI Trends Outlook:</span>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                          sentimentScores.trends === 'optimistic'
+                            ? 'bg-emerald-500/20 text-emerald-300'
+                            : sentimentScores.trends === 'pessimistic'
+                            ? 'bg-red-500/20 text-red-300'
+                            : 'bg-slate-500/20 text-slate-300'
+                        }`}>
+                          {sentimentScores.trends.charAt(0).toUpperCase() + sentimentScores.trends.slice(1)}
+                        </span>
+                      </div>
+
+                      <SentimentBar
+                        label="Regulation"
+                        value={sentimentScores.regulation}
+                        leftLabel="Against"
+                        rightLabel="Pro"
+                      />
+                      <SentimentBar
+                        label="AI Usage"
+                        value={sentimentScores.usage}
+                        leftLabel="Restrictive"
+                        rightLabel="Enthusiastic"
+                      />
+                      <SentimentBar
+                        label="Equity"
+                        value={sentimentScores.equity}
+                        leftLabel="Indifferent"
+                        rightLabel="Champion"
+                      />
+                      <SentimentBar
+                        label="AI Agents"
+                        value={sentimentScores.agent}
+                        leftLabel="Skeptical"
+                        rightLabel="Bullish"
+                      />
+                      <p className="text-[10px] text-slate-600 mt-2 italic">Inferred from bio & focus areas via Gemini</p>
+                    </>
+                  )}
+
+                  {!sentimentLoading && !sentimentScores && (
+                    <p className="text-xs text-slate-500 italic">No API key configured for sentiment analysis.</p>
+                  )}
+                </div>
                 </>
             )}
 
@@ -519,11 +636,9 @@ export default function App() {
         </button>
         <div className={`flex flex-col gap-1 overflow-hidden transition-all duration-300 ease-in-out ${isLegendOpen ? 'mt-3 max-h-60 opacity-100' : 'max-h-0 opacity-0'}`}>
           {[
-            { key: 'company', color: '#FFD4A3', label: 'Company / Organization' },
             { key: 'founder', color: '#A3D4FF', label: 'Founder / Builder' },
             { key: 'researcher', color: '#E0B3FF', label: 'Researcher / Academia' },
             { key: 'investor', color: '#B3FFB3', label: 'Investor' },
-            { key: 'media', color: '#FFB3D9', label: 'Media' },
           ].map(cat => (
             <button
               key={cat.key}

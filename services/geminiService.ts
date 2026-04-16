@@ -1,5 +1,73 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { GraphData, InfluencerResponse } from "../types";
+import { GraphData, GraphNode, InfluencerResponse, SentimentScores } from "../types";
+
+export const analyzeSentiment = async (node: GraphNode): Promise<SentimentScores | null> => {
+  if (!process.env.API_KEY) {
+    console.warn("No API KEY found for sentiment analysis");
+    return null;
+  }
+
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+  const context = [
+    node.name,
+    node.role ? `Role: ${node.role}` : '',
+    node.associated ? `Organization: ${node.associated}` : '',
+    node.bio ? `Bio: ${node.bio}` : '',
+    node.bioTags?.length ? `Focus areas: ${node.bioTags.join(', ')}` : '',
+  ].filter(Boolean).join('\n');
+
+  const prompt = `Analyze the following AI professional's profile and infer their stance on each dimension. Use only the provided information — do not hallucinate.
+
+Profile:
+${context}
+
+Return scores as follows:
+- trends: their overall outlook on AI progress ("optimistic", "pessimistic", or "neutral")
+- regulation: a number from -1 (strongly against AI regulation) to 1 (strongly pro AI regulation)
+- usage: a number from -1 (very restrictive/cautious about AI use) to 1 (highly enthusiastic about broad AI usage)
+- equity: a number from -1 (indifferent to AI equity/fairness) to 1 (strong champion of AI equity)
+- agent: a number from -1 (skeptical of AI agents) to 1 (very bullish on AI agents)
+
+Base your inference on their role, bio, and focus areas. If truly ambiguous, use 0.`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            trends: { type: Type.STRING, description: "optimistic, pessimistic, or neutral" },
+            regulation: { type: Type.NUMBER, description: "-1 to 1" },
+            usage: { type: Type.NUMBER, description: "-1 to 1" },
+            equity: { type: Type.NUMBER, description: "-1 to 1" },
+            agent: { type: Type.NUMBER, description: "-1 to 1" },
+          },
+          required: ["trends", "regulation", "usage", "equity", "agent"],
+        },
+      },
+    });
+
+    if (response.text) {
+      const parsed = JSON.parse(response.text);
+      const clamp = (v: number) => Math.max(-1, Math.min(1, v));
+      return {
+        trends: ['optimistic', 'pessimistic', 'neutral'].includes(parsed.trends) ? parsed.trends : 'neutral',
+        regulation: clamp(parsed.regulation ?? 0),
+        usage: clamp(parsed.usage ?? 0),
+        equity: clamp(parsed.equity ?? 0),
+        agent: clamp(parsed.agent ?? 0),
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error("Gemini sentiment error:", error);
+    return null;
+  }
+};
 
 export const expandNetwork = async (currentData: GraphData): Promise<InfluencerResponse> => {
   if (!process.env.API_KEY) {

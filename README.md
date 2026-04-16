@@ -1,6 +1,6 @@
-# AI Influencers on X
+# AI Sphere
 
-An interactive 3D map of the top AI influencers on X (Twitter) — explore who they are, what they do, and how they're connected.
+An interactive 3D map of the top AI influencers — explore who they are, what they do, and how they're connected.
 
 ## 🌐 Live Site
 

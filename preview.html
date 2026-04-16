@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Sphere — Preview</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
+    body { margin: 0; background: #0B0C15; color: white; overflow: hidden; }
+
+    #stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+
+    .custom-scroll::-webkit-scrollbar { width: 4px; }
+    .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+    .node-group { cursor: pointer; }
+    .node-group:hover .main-circle { filter: brightness(1.3); }
+
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(24px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .slide-in { animation: slideInRight 0.3s cubic-bezier(0.22,1,0.36,1) both; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.35s ease both; }
+
+    .sentiment-dot {
+      transition: left 0.9s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    .cat-btn {
+      border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(148,163,184,1);
+      transition: all 0.2s;
+    }
+    .cat-btn.active {
+      background: rgba(99,102,241,0.2);
+      border-color: rgba(99,102,241,0.5);
+      color: #a5b4fc;
+    }
+    .cat-btn:not(.active):hover {
+      background: rgba(255,255,255,0.05);
+      color: #e2e8f0;
+    }
+
+    .badge-founder    { background: rgba(163,212,255,0.15); color: #A3D4FF; }
+    .badge-researcher { background: rgba(224,179,255,0.15); color: #E0B3FF; }
+    .badge-investor   { background: rgba(179,255,179,0.15); color: #B3FFB3; }
+
+    #graph-svg { display: block; width: 100%; height: 100%; }
+  </style>
+</head>
+<body class="w-screen h-screen overflow-hidden">
+
+  <!-- Stars canvas -->
+  <canvas id="stars"></canvas>
+
+  <!-- Layout -->
+  <div class="relative z-10 flex w-full h-full">
+
+    <!-- ── LEFT SIDEBAR ────────────────────────────────── -->
+    <div class="w-[300px] h-full bg-black/40 backdrop-blur-xl border-r border-white/10 flex flex-col z-20 flex-shrink-0">
+
+      <!-- Header -->
+      <div class="px-4 py-4 border-b border-white/10">
+        <div class="flex items-center gap-2 mb-0.5">
+          <div class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 via-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold shadow-[0_0_12px_rgba(99,102,241,0.5)]">⬡</div>
+          <h1 class="text-lg font-bold tracking-tight">AI Sphere</h1>
+          <span class="text-[9px] font-semibold text-indigo-300 bg-indigo-500/20 border border-indigo-500/30 px-1.5 py-0.5 rounded-full uppercase tracking-widest">Preview</span>
+        </div>
+        <p class="text-[11px] text-slate-500 pl-9">Top 50 AI Individuals · Sentiment Analysis</p>
+      </div>
+
+      <!-- Search -->
+      <div class="px-3 py-2.5 border-b border-white/10">
+        <div class="relative">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input id="search-input" type="text" placeholder="Search name, role, tag…"
+            class="w-full pl-8 pr-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30" />
+        </div>
+      </div>
+
+      <!-- Category filters -->
+      <div class="px-3 py-2 border-b border-white/10 flex gap-1.5">
+        <button class="cat-btn active text-[11px] px-2.5 py-1 rounded-full" data-cat="all">All</button>
+        <button class="cat-btn text-[11px] px-2.5 py-1 rounded-full" data-cat="founder">Founder</button>
+        <button class="cat-btn text-[11px] px-2.5 py-1 rounded-full" data-cat="researcher">Researcher</button>
+        <button class="cat-btn text-[11px] px-2.5 py-1 rounded-full" data-cat="investor">Investor</button>
+      </div>
+
+      <!-- Ranked list -->
+      <div id="person-list" class="flex-1 overflow-y-auto custom-scroll p-2"></div>
+
+      <!-- Footer stats -->
+      <div class="px-4 py-2.5 border-t border-white/10 flex justify-between items-center text-[10px] text-slate-600">
+        <span id="stat-count">15 individuals</span>
+        <span id="stat-links">35 connections</span>
+      </div>
+    </div>
+
+    <!-- ── GRAPH AREA ────────────────────────────────── -->
+    <div class="flex-1 relative overflow-hidden" id="graph-container">
+      <svg id="graph-svg"></svg>
+
+      <!-- Instructions pill -->
+      <div class="absolute top-4 left-1/2 -translate-x-1/2 text-[11px] text-slate-600 bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full border border-white/5 pointer-events-none select-none">
+        Click a node to explore · Scroll to zoom · Drag to pan
+      </div>
+
+      <!-- Legend -->
+      <div class="absolute bottom-6 right-6 bg-[#0B0C15]/80 backdrop-blur-md border border-white/10 rounded-xl p-3 z-20">
+        <div class="text-[10px] text-slate-500 uppercase tracking-wider mb-2 font-medium">Legend</div>
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center gap-2">
+            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:#A3D4FF;box-shadow:0 0 6px #A3D4FF66"></div>
+            <span class="text-[11px] text-slate-300">Founder / Builder</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:#E0B3FF;box-shadow:0 0 6px #E0B3FF66"></div>
+            <span class="text-[11px] text-slate-300">Researcher / Academia</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:#B3FFB3;box-shadow:0 0 6px #B3FFB366"></div>
+            <span class="text-[11px] text-slate-300">Investor</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FLOATING DETAIL CARD ────────────────────────── -->
+  <div id="detail-card" class="fixed top-6 right-6 w-[360px] z-50 hidden flex-col gap-3">
+
+    <!-- Profile card -->
+    <div class="bg-[#090A10]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden slide-in">
+      <div id="card-banner" class="h-20 relative">
+        <div class="absolute inset-0 bg-gradient-to-t from-[#090A10]/80 to-transparent"></div>
+        <button id="close-card" class="absolute top-3 right-3 p-1.5 bg-black/40 hover:bg-black/60 rounded-full text-white/70 hover:text-white transition-colors z-10">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="px-4 pb-4">
+        <div class="flex justify-between items-start">
+          <div class="relative -mt-10 mb-2">
+            <img id="card-avatar" src="" alt="" class="w-16 h-16 rounded-full border-4 border-[#090A10] object-cover bg-slate-800 shadow-lg" />
+            <div id="card-dot" class="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-[#090A10]"></div>
+          </div>
+          <a id="card-follow" href="#" target="_blank" rel="noopener noreferrer"
+            class="mt-2 px-4 py-1.5 bg-white hover:bg-white/90 text-black font-bold text-xs rounded-full transition-all">
+            Follow on X
+          </a>
+        </div>
+        <h2 id="card-name" class="text-base font-bold text-white mb-0.5"></h2>
+        <div id="card-handle" class="text-slate-500 text-xs mb-2"></div>
+        <div class="flex items-center gap-2 mb-2">
+          <span id="card-group-badge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full"></span>
+          <span id="card-role" class="text-xs text-slate-400 truncate"></span>
+        </div>
+        <p id="card-bio" class="text-xs text-slate-300 leading-relaxed mb-2.5"></p>
+        <div id="card-tags" class="flex flex-wrap gap-1 mb-3"></div>
+        <div class="flex gap-4 text-sm">
+          <div><span id="card-followers" class="font-bold text-white text-sm"></span><span class="text-slate-500 text-xs ml-1">Followers</span></div>
+          <div><span id="card-connections" class="font-bold text-white text-sm"></span><span class="text-slate-500 text-xs ml-1">Connections</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sentiment card -->
+    <div class="bg-[#090A10]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-4 slide-in" style="animation-delay:0.05s">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-semibold text-white">AI Sentiment Analysis</h3>
+        <span class="text-[9px] font-semibold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-full">Gemini-powered</span>
+      </div>
+      <div class="flex items-center gap-2 mb-4">
+        <span class="text-xs text-slate-400">AI Trends:</span>
+        <span id="trends-badge" class="text-xs font-semibold px-2 py-0.5 rounded-full"></span>
+      </div>
+      <div id="sentiment-bars"></div>
+      <p class="text-[10px] text-slate-600 mt-1 italic">Inferred from bio & focus areas via Gemini</p>
+    </div>
+  </div>
+
+  <script>
+  // ═══════════════════════════════════════════════
+  // MOCK DATA
+  // ═══════════════════════════════════════════════
+  const people = [
+    { id:'samaltman',    name:'Sam Altman',       handle:'sama',         group:'founder',    role:'CEO',                    associated:'OpenAI',              followers:3200000, bio:'CEO at OpenAI. Working on making AI that benefits all of humanity.',                                    bioTags:['AGI','LLMs','Safety','Startups'],             sentiment:{trends:'optimistic', regulation:0.30, usage:0.90, equity:0.50, agent:0.90} },
+    { id:'karpathy',     name:'Andrej Karpathy',  handle:'karpathy',     group:'researcher', role:'AI Researcher',          associated:'Independent',         followers: 850000, bio:'Previously at OpenAI and Tesla. Educator focused on deep learning and neural networks.',            bioTags:['Deep Learning','Education','LLMs','Neural Nets'],sentiment:{trends:'optimistic', regulation:-0.10, usage:0.80, equity:0.20, agent:0.70} },
+    { id:'ylecun',       name:'Yann LeCun',       handle:'ylecun',       group:'researcher', role:'Chief AI Scientist',     associated:'Meta',                followers: 780000, bio:'VP & Chief AI Scientist at Meta. Professor at NYU. Creator of convolutional nets.',               bioTags:['Deep Learning','Vision','Open Source','Research'], sentiment:{trends:'optimistic', regulation:-0.50, usage:0.70, equity:0.40, agent:-0.30} },
+    { id:'demishassabis',name:'Demis Hassabis',   handle:'demishassabis',group:'founder',    role:'CEO & Co-founder',       associated:'Google DeepMind',     followers: 450000, bio:'Co-Founder & CEO of Google DeepMind. Neuroscientist. Chess prodigy. Nobel Prize in Chemistry.',  bioTags:['AGI','Neuroscience','AlphaFold','Research'],  sentiment:{trends:'optimistic', regulation:0.50, usage:0.60, equity:0.60, agent:0.80} },
+    { id:'darioamodei',  name:'Dario Amodei',     handle:'darioBrain',   group:'founder',    role:'CEO & Co-founder',       associated:'Anthropic',           followers: 380000, bio:'CEO of Anthropic. Focused on AI safety and beneficial AI development.',                           bioTags:['AI Safety','LLMs','Alignment','Research'],   sentiment:{trends:'optimistic', regulation:0.70, usage:0.50, equity:0.70, agent:0.60} },
+    { id:'ilyasutskever',name:'Ilya Sutskever',   handle:'ilyasut',      group:'researcher', role:'Co-founder & CEO',       associated:'Safe Superintelligence',followers:420000, bio:'Co-founder of OpenAI and SSI. Deeply focused on safe superintelligence.',                        bioTags:['AGI','Safety','Deep Learning','Transformers'],sentiment:{trends:'optimistic', regulation:0.60, usage:0.40, equity:0.50, agent:0.50} },
+    { id:'geoffreyhinton',name:'Geoffrey Hinton', handle:'geoffreyhinton',group:'researcher',role:'Turing Award Winner',    associated:'Independent',         followers: 350000, bio:'Godfather of deep learning. Former VP at Google. Turing Award winner. Now raising AI safety concerns.', bioTags:['Deep Learning','Safety','Neural Nets','Research'], sentiment:{trends:'pessimistic', regulation:0.90, usage:0.20, equity:0.60, agent:-0.40} },
+    { id:'drfeifei',     name:'Fei-Fei Li',       handle:'drfeifei',     group:'researcher', role:'Professor & Co-Director',associated:'Stanford HAI',         followers: 280000, bio:'Sequoia Professor at Stanford. Co-Director of HAI. Creator of ImageNet.',                        bioTags:['Vision','HAI','Education','Equity'],          sentiment:{trends:'optimistic', regulation:0.60, usage:0.50, equity:0.95, agent:0.30} },
+    { id:'andrewng',     name:'Andrew Ng',        handle:'AndrewYNg',    group:'researcher', role:'Founder & CEO',          associated:'DeepLearning.AI',     followers: 920000, bio:'Founder of DeepLearning.AI, Coursera. Managing General Partner of AI Fund.',                     bioTags:['Education','LLMs','Agentic AI','Startups'],   sentiment:{trends:'optimistic', regulation:-0.20, usage:0.90, equity:0.60, agent:0.90} },
+    { id:'gdb',          name:'Greg Brockman',    handle:'gdb',          group:'founder',    role:'Co-founder',             associated:'OpenAI',              followers: 320000, bio:'Co-founder of OpenAI. Building safe and beneficial AGI.',                                          bioTags:['AGI','LLMs','Safety','Engineering'],          sentiment:{trends:'optimistic', regulation:0.40, usage:0.80, equity:0.50, agent:0.80} },
+    { id:'jensenhwang',  name:'Jensen Huang',     handle:'jensenhuang',  group:'founder',    role:'CEO & Co-founder',       associated:'NVIDIA',              followers:1100000, bio:'CEO of NVIDIA. Pioneering accelerated computing and AI infrastructure for the world.',            bioTags:['GPUs','Infrastructure','Robotics','Hardware'],sentiment:{trends:'optimistic', regulation:0.10, usage:0.95, equity:0.30, agent:0.85} },
+    { id:'naval',        name:'Naval Ravikant',   handle:'naval',        group:'investor',   role:'Investor & Philosopher', associated:'AngelList',           followers:2100000, bio:'Angel philosopher. Co-founded AngelList. Thinker on startups, AI, and human nature.',            bioTags:['Investing','Philosophy','Startups','AI'],     sentiment:{trends:'optimistic', regulation:-0.80, usage:0.80, equity:0.10, agent:0.70} },
+    { id:'yoshuabengio', name:'Yoshua Bengio',    handle:'yoshuabengio', group:'researcher', role:'Professor',              associated:'Mila / U. Montréal',  followers: 190000, bio:'Turing Award winner. Pioneer in deep learning. AI safety and ethics advocate.',                  bioTags:['Deep Learning','Safety','Alignment','Research'],sentiment:{trends:'neutral',    regulation:0.85, usage:0.30, equity:0.80, agent:0.10} },
+    { id:'fchollet',     name:'François Chollet', handle:'fchollet',     group:'researcher', role:'AI Researcher',          associated:'Google',              followers: 210000, bio:'Creator of Keras. AI researcher at Google. Working on intelligence and ARC benchmarks.',         bioTags:['Keras','AGI','Benchmarks','Research'],        sentiment:{trends:'neutral',    regulation:0.30, usage:0.60, equity:0.40, agent:-0.10} },
+    { id:'reidhoffman',  name:'Reid Hoffman',     handle:'reidhoffman',  group:'investor',   role:'Co-founder & Partner',   associated:'Greylock',            followers: 580000, bio:'Co-founder of LinkedIn. Partner at Greylock. Author. AI optimist and policy thinker.',         bioTags:['Investing','AI Policy','Startups','Leadership'],sentiment:{trends:'optimistic', regulation:0.50, usage:0.75, equity:0.65, agent:0.70} },
+  ];
+
+  const links = [
+    {source:'samaltman',    target:'gdb'},
+    {source:'samaltman',    target:'ilyasutskever'},
+    {source:'samaltman',    target:'darioamodei'},
+    {source:'samaltman',    target:'jensenhwang'},
+    {source:'karpathy',     target:'samaltman'},
+    {source:'karpathy',     target:'ylecun'},
+    {source:'karpathy',     target:'ilyasutskever'},
+    {source:'karpathy',     target:'andrewng'},
+    {source:'ylecun',       target:'geoffreyhinton'},
+    {source:'ylecun',       target:'yoshuabengio'},
+    {source:'ylecun',       target:'drfeifei'},
+    {source:'ylecun',       target:'fchollet'},
+    {source:'demishassabis',target:'ilyasutskever'},
+    {source:'demishassabis',target:'geoffreyhinton'},
+    {source:'demishassabis',target:'yoshuabengio'},
+    {source:'darioamodei',  target:'samaltman'},
+    {source:'darioamodei',  target:'ilyasutskever'},
+    {source:'ilyasutskever',target:'geoffreyhinton'},
+    {source:'ilyasutskever',target:'yoshuabengio'},
+    {source:'andrewng',     target:'drfeifei'},
+    {source:'andrewng',     target:'ylecun'},
+    {source:'andrewng',     target:'geoffreyhinton'},
+    {source:'gdb',          target:'samaltman'},
+    {source:'jensenhwang',  target:'samaltman'},
+    {source:'jensenhwang',  target:'demishassabis'},
+    {source:'naval',        target:'samaltman'},
+    {source:'naval',        target:'reidhoffman'},
+    {source:'yoshuabengio', target:'geoffreyhinton'},
+    {source:'yoshuabengio', target:'drfeifei'},
+    {source:'fchollet',     target:'ylecun'},
+    {source:'reidhoffman',  target:'samaltman'},
+    {source:'reidhoffman',  target:'andrewng'},
+    {source:'drfeifei',     target:'andrewng'},
+    {source:'drfeifei',     target:'darioamodei'},
+    {source:'geoffreyhinton',target:'yoshuabengio'},
+  ];
+
+  // ═══════════════════════════════════════════════
+  // STATE
+  // ═══════════════════════════════════════════════
+  let selectedPerson = null;
+  let activeCategory = 'all';
+  let searchQuery    = '';
+  let simulation, svgSel, linkSel, nodeSel;
+
+  const GROUP_COLORS  = { founder:'#A3D4FF', researcher:'#E0B3FF', investor:'#B3FFB3' };
+  const GROUP_BANNERS = {
+    founder:    'linear-gradient(135deg,rgba(30,64,175,.55),rgba(15,15,40,.6))',
+    researcher: 'linear-gradient(135deg,rgba(88,28,135,.55),rgba(15,15,40,.6))',
+    investor:   'linear-gradient(135deg,rgba(6,78,59,.55),rgba(15,15,40,.6))',
+  };
+
+  function fmt(n) {
+    if (!n) return '0';
+    if (n >= 1e6) return (n/1e6).toFixed(1)+'M';
+    if (n >= 1e3) return Math.round(n/1e3)+'K';
+    return n;
+  }
+
+  // ═══════════════════════════════════════════════
+  // STARS
+  // ═══════════════════════════════════════════════
+  (function() {
+    const canvas = document.getElementById('stars');
+    const ctx    = canvas.getContext('2d');
+    let stars    = [];
+
+    function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+
+    function spawn() {
+      stars = Array.from({length:200}, () => ({
+        x: Math.random()*canvas.width,
+        y: Math.random()*canvas.height,
+        r: Math.random()*1.1+0.2,
+        a: Math.random()*0.55+0.08,
+        da: (Math.random()-0.5)*0.008,
+      }));
+    }
+
+    function draw() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      for (const s of stars) {
+        s.a = Math.max(0.05, Math.min(0.7, s.a + s.da));
+        if (Math.random() < 0.005) s.da *= -1;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(255,255,255,${s.a.toFixed(2)})`;
+        ctx.fill();
+      }
+      requestAnimationFrame(draw);
+    }
+
+    resize(); spawn(); draw();
+    window.addEventListener('resize', () => { resize(); spawn(); });
+  })();
+
+  // ═══════════════════════════════════════════════
+  // SIDEBAR
+  // ═══════════════════════════════════════════════
+  function getFiltered() {
+    return people.filter(p => {
+      const okCat = activeCategory === 'all' || p.group === activeCategory;
+      const q     = searchQuery.toLowerCase();
+      const okQ   = !q || [p.name, p.handle, p.role, p.associated, ...p.bioTags]
+        .some(s => s.toLowerCase().includes(q));
+      return okCat && okQ;
+    }).sort((a,b) => b.followers - a.followers);
+  }
+
+  function renderSidebar() {
+    const filtered = getFiltered();
+    document.getElementById('stat-count').textContent = `${filtered.length} individual${filtered.length!==1?'s':''}`;
+    document.getElementById('stat-links').textContent = `${links.length} connections`;
+
+    document.getElementById('person-list').innerHTML = filtered.map((p, i) => {
+      const sel   = selectedPerson?.id === p.id;
+      const color = GROUP_COLORS[p.group];
+      return `
+        <button onclick="selectPerson('${p.id}')"
+          class="w-full text-left p-3 rounded-xl mb-1 flex items-center gap-3 transition-all duration-200 border
+                 ${sel ? 'bg-indigo-600/20 border-indigo-500/40 shadow-md shadow-indigo-900/20'
+                       : 'hover:bg-white/5 border-transparent'}">
+          <div class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0
+                      ${sel ? 'bg-indigo-500 text-white' : 'bg-slate-800/70 text-slate-400'}">
+            ${i+1}
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-baseline gap-1.5 truncate">
+              <span class="text-xs font-semibold truncate ${sel ? 'text-white':'text-slate-200'}">${p.name}</span>
+              <span class="text-[10px] text-slate-600 font-mono shrink-0">@${p.handle}</span>
+            </div>
+            <div class="flex items-center justify-between mt-0.5">
+              <span class="text-[10px] text-slate-500 truncate flex-1">${p.role} @ ${p.associated}</span>
+              <span class="text-[10px] text-slate-600 shrink-0 ml-1">${fmt(p.followers)}</span>
+            </div>
+          </div>
+          <div class="w-2 h-2 rounded-full shrink-0" style="background:${color};box-shadow:0 0 5px ${color}88"></div>
+        </button>`;
+    }).join('');
+  }
+
+  // ═══════════════════════════════════════════════
+  // CATEGORY BUTTONS
+  // ═══════════════════════════════════════════════
+  document.querySelectorAll('.cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeCategory = btn.dataset.cat;
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderSidebar();
+      updateGraphDim();
+    });
+  });
+
+  document.getElementById('search-input').addEventListener('input', e => {
+    searchQuery = e.target.value;
+    renderSidebar();
+    updateGraphDim();
+  });
+
+  // ═══════════════════════════════════════════════
+  // DETAIL CARD
+  // ═══════════════════════════════════════════════
+  function selectPerson(id) {
+    const p = people.find(x => x.id === id);
+    if (!p) return;
+    if (selectedPerson?.id === id) { closeCard(); return; }
+    selectedPerson = p;
+    showCard(p);
+    highlightNode(id);
+    renderSidebar();
+  }
+
+  function showCard(p) {
+    const card = document.getElementById('detail-card');
+    card.classList.remove('hidden');
+    card.classList.add('flex');
+
+    // Restart animations
+    card.querySelectorAll('.slide-in').forEach(el => {
+      el.style.animation = 'none'; el.offsetHeight; el.style.animation = '';
+    });
+
+    const color = GROUP_COLORS[p.group];
+    document.getElementById('card-banner').style.background = GROUP_BANNERS[p.group];
+
+    const avatarEl = document.getElementById('card-avatar');
+    avatarEl.src = `https://unavatar.io/twitter/${p.handle}`;
+    avatarEl.onerror = () => {
+      avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=1e293b&color=cbd5e1&size=128`;
+    };
+
+    const dot = document.getElementById('card-dot');
+    dot.style.background = color;
+    dot.style.boxShadow  = `0 0 8px ${color}`;
+
+    document.getElementById('card-follow').href = `https://x.com/${p.handle}`;
+    document.getElementById('card-name').textContent   = p.name;
+    document.getElementById('card-handle').textContent = `@${p.handle}`;
+
+    const gb = document.getElementById('card-group-badge');
+    gb.textContent = p.group.charAt(0).toUpperCase() + p.group.slice(1);
+    gb.className   = `text-[10px] font-semibold px-2 py-0.5 rounded-full badge-${p.group}`;
+
+    document.getElementById('card-role').textContent = `${p.role} @ ${p.associated}`;
+    document.getElementById('card-bio').textContent  = p.bio;
+
+    document.getElementById('card-tags').innerHTML = p.bioTags.map(t =>
+      `<span class="text-[10px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-slate-400">${t}</span>`
+    ).join('');
+
+    document.getElementById('card-followers').textContent = fmt(p.followers);
+    const connCount = links.filter(l => l.source===p.id || l.target===p.id || l.source?.id===p.id || l.target?.id===p.id).length;
+    document.getElementById('card-connections').textContent = connCount;
+
+    renderSentiment(p.sentiment);
+  }
+
+  function renderSentiment(s) {
+    const cfg = {
+      optimistic: { label:'Optimistic', cls:'bg-emerald-500/20 text-emerald-300' },
+      pessimistic:{ label:'Pessimistic', cls:'bg-red-500/20 text-red-300' },
+      neutral:    { label:'Neutral',     cls:'bg-slate-500/20 text-slate-300' },
+    };
+    const tc = cfg[s.trends] || cfg.neutral;
+    const tb = document.getElementById('trends-badge');
+    tb.textContent = tc.label;
+    tb.className   = `text-xs font-semibold px-2 py-0.5 rounded-full ${tc.cls}`;
+
+    const bars = [
+      { label:'Regulation', left:'Against',    right:'Pro',          value:s.regulation },
+      { label:'AI Usage',   left:'Restrictive', right:'Enthusiastic', value:s.usage },
+      { label:'Equity',     left:'Indifferent', right:'Champion',     value:s.equity },
+      { label:'AI Agents',  left:'Skeptical',   right:'Bullish',      value:s.agent },
+    ];
+
+    document.getElementById('sentiment-bars').innerHTML = bars.map(b => `
+      <div class="mb-3">
+        <div class="text-[11px] font-medium text-slate-300 mb-1.5">${b.label}</div>
+        <div class="relative h-1 bg-slate-700/50 rounded-full">
+          <div class="sentiment-dot absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full
+                      bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,.9)]"
+               style="left:50%" data-target="${((b.value+1)/2*100).toFixed(1)}"></div>
+        </div>
+        <div class="flex justify-between mt-1">
+          <span class="text-[10px] text-slate-600">${b.left}</span>
+          <span class="text-[10px] text-slate-600">${b.right}</span>
+        </div>
+      </div>`).join('');
+
+    // Animate dots after a frame
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      document.querySelectorAll('.sentiment-dot').forEach(dot => {
+        dot.style.left = dot.dataset.target + '%';
+      });
+    }));
+  }
+
+  function closeCard() {
+    selectedPerson = null;
+    const card = document.getElementById('detail-card');
+    card.classList.add('hidden');
+    card.classList.remove('flex');
+    clearHighlight();
+    renderSidebar();
+  }
+
+  document.getElementById('close-card').addEventListener('click', closeCard);
+
+  // ═══════════════════════════════════════════════
+  // D3 FORCE GRAPH
+  // ═══════════════════════════════════════════════
+  function nodeRadius(d) {
+    if (d.followers >= 1e6)  return 15;
+    if (d.followers >= 5e5)  return 12;
+    if (d.followers >= 2e5)  return 10;
+    return 8;
+  }
+
+  function initGraph() {
+    const container = document.getElementById('graph-container');
+    const W = container.clientWidth, H = container.clientHeight;
+
+    svgSel = d3.select('#graph-svg')
+      .attr('width', W).attr('height', H);
+
+    const zoom = d3.zoom().scaleExtent([0.25,5])
+      .on('zoom', ev => g.attr('transform', ev.transform));
+    svgSel.call(zoom);
+
+    svgSel.on('click', function(ev) {
+      if (ev.target === this || ev.target.tagName.toLowerCase() === 'svg') closeCard();
+    });
+
+    const g = svgSel.append('g').attr('class', 'root');
+
+    const simLinks = links.map(l => ({...l}));
+    const simNodes = people.map(p => ({...p}));
+
+    simulation = d3.forceSimulation(simNodes)
+      .force('link', d3.forceLink(simLinks).id(d => d.id).distance(100).strength(0.35))
+      .force('charge', d3.forceManyBody().strength(-320))
+      .force('center', d3.forceCenter(W/2, H/2))
+      .force('collide', d3.forceCollide().radius(d => nodeRadius(d)+14));
+
+    // Links
+    linkSel = g.append('g').selectAll('line')
+      .data(simLinks).join('line')
+      .attr('stroke', 'rgba(255,255,255,0.07)')
+      .attr('stroke-width', 1);
+
+    // Node groups
+    const ng = g.append('g').selectAll('g')
+      .data(simNodes).join('g')
+      .attr('class', 'node-group')
+      .call(d3.drag()
+        .on('start', (ev,d) => { if (!ev.active) simulation.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
+        .on('drag',  (ev,d) => { d.fx=ev.x; d.fy=ev.y; })
+        .on('end',   (ev,d) => { if (!ev.active) simulation.alphaTarget(0); d.fx=null; d.fy=null; })
+      )
+      .on('click', (ev,d) => { ev.stopPropagation(); selectPerson(d.id); });
+
+    // Glow halo
+    ng.append('circle')
+      .attr('r',  d => nodeRadius(d)+5)
+      .attr('fill', d => GROUP_COLORS[d.group])
+      .attr('opacity', 0.1)
+      .attr('class', 'halo');
+
+    // Main circle
+    ng.append('circle')
+      .attr('r', d => nodeRadius(d))
+      .attr('fill', d => GROUP_COLORS[d.group])
+      .attr('opacity', 0.88)
+      .attr('stroke', d => GROUP_COLORS[d.group])
+      .attr('stroke-width', 1.5)
+      .attr('stroke-opacity', 0.5)
+      .attr('class', 'main-circle');
+
+    // Label
+    ng.append('text')
+      .text(d => d.name.split(' ')[0])
+      .attr('dy', d => nodeRadius(d)+13)
+      .attr('text-anchor', 'middle')
+      .attr('fill', 'rgba(255,255,255,0.6)')
+      .attr('font-size', '9px')
+      .attr('pointer-events', 'none')
+      .attr('class', 'node-label');
+
+    nodeSel = ng;
+
+    simulation.on('tick', () => {
+      linkSel
+        .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+        .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+      nodeSel.attr('transform', d => `translate(${d.x},${d.y})`);
+    });
+  }
+
+  function highlightNode(id) {
+    if (!nodeSel) return;
+    const connected = new Set([id]);
+    links.forEach(l => {
+      const s = typeof l.source==='object' ? l.source.id : l.source;
+      const t = typeof l.target==='object' ? l.target.id : l.target;
+      if (s===id) connected.add(t);
+      if (t===id) connected.add(s);
+    });
+
+    nodeSel.selectAll('.main-circle')
+      .attr('opacity', d => connected.has(d.id) ? 1 : 0.1);
+    nodeSel.selectAll('.halo')
+      .attr('opacity', d => d.id===id ? 0.4 : 0.03);
+    nodeSel.selectAll('.node-label')
+      .attr('fill', d => connected.has(d.id) ? 'rgba(255,255,255,.9)' : 'rgba(255,255,255,0.05)');
+
+    linkSel
+      .attr('stroke', l => {
+        const s = typeof l.source==='object' ? l.source.id : l.source;
+        const t = typeof l.target==='object' ? l.target.id : l.target;
+        return (s===id||t===id) ? 'rgba(255,255,255,.45)' : 'rgba(255,255,255,.03)';
+      })
+      .attr('stroke-width', l => {
+        const s = typeof l.source==='object' ? l.source.id : l.source;
+        const t = typeof l.target==='object' ? l.target.id : l.target;
+        return (s===id||t===id) ? 2 : 0.8;
+      });
+  }
+
+  function clearHighlight() {
+    if (!nodeSel) return;
+    nodeSel.selectAll('.main-circle').attr('opacity', 0.88);
+    nodeSel.selectAll('.halo').attr('opacity', 0.1);
+    nodeSel.selectAll('.node-label').attr('fill', 'rgba(255,255,255,.6)');
+    linkSel.attr('stroke','rgba(255,255,255,0.07)').attr('stroke-width',1);
+  }
+
+  function updateGraphDim() {
+    if (!nodeSel) return;
+    nodeSel.selectAll('.main-circle').attr('opacity', d => {
+      const okCat = activeCategory==='all' || d.group===activeCategory;
+      const q = searchQuery.toLowerCase();
+      const okQ = !q || [d.name, d.handle, d.role, d.associated, ...(d.bioTags||[])]
+        .some(s => s.toLowerCase().includes(q));
+      return (okCat && okQ) ? 0.88 : 0.07;
+    });
+    nodeSel.selectAll('.node-label').attr('fill', d => {
+      const okCat = activeCategory==='all' || d.group===activeCategory;
+      return okCat ? 'rgba(255,255,255,.6)' : 'transparent';
+    });
+  }
+
+  // ═══════════════════════════════════════════════
+  // INIT
+  // ═══════════════════════════════════════════════
+  renderSidebar();
+  initGraph();
+
+  window.addEventListener('resize', () => {
+    const c = document.getElementById('graph-container');
+    svgSel.attr('width', c.clientWidth).attr('height', c.clientHeight);
+    simulation.force('center', d3.forceCenter(c.clientWidth/2, c.clientHeight/2));
+    simulation.alpha(0.15).restart();
+  });
+  </script>
+</body>
+</html>

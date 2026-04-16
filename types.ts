@@ -33,6 +33,14 @@ export interface GraphData {
   links: GraphLink[];
 }
 
+export interface SentimentScores {
+  trends: 'optimistic' | 'pessimistic' | 'neutral';
+  regulation: number;  // -1 (against) to 1 (pro)
+  usage: number;       // -1 (restrictive) to 1 (enthusiastic)
+  equity: number;      // -1 (indifferent) to 1 (champion)
+  agent: number;       // -1 (skeptical) to 1 (bullish)
+}
+
 export interface InfluencerResponse {
   newNodes: Array<{ 
     name: string; 
