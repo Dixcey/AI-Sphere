@@ -4,7 +4,7 @@ An interactive 3D map of the top AI influencers — explore who they are, what t
 
 ## 🌐 Live Site
 
-**[x.mitbunny.ai](https://x.mitbunny.ai)**
+**[wendylzh6.github.io/AI_Sphere/preview.html](https://wendylzh6.github.io/AI_Sphere/preview.html)**
 
 ---
 
@@ -26,13 +26,6 @@ There are millions of pieces of AI news and information generated every second o
 | Icons | Lucide React |
 | Analytics | Vercel Analytics |
 | Data pipeline | Node.js + RapidAPI (X/Twitter) |
-
----
-
-## 🎬 Demo Videos
-
-- **English version** — [Watch on TikTok](https://www.tiktok.com/@mitbunny.ai/video/7606164884962807071)
-- **Chinese version** — [Watch on Xiaohongshu](https://www.xiaohongshu.com/discovery/item/698e9e0f000000001a02d1f9?source=webshare&xhsshare=pc_web&xsec_token=ABEMTSPrR3raZeWJ1ZpU8ZV9JgqDTymrLuKnon8v590rg=&xsec_source=pc_share)
 
 ---
 
