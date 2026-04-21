@@ -240,7 +240,7 @@
           </button>
         </div>
         <div class="px-3 pb-3">
-          <!-- Avatar + follow -->
+          <!-- Avatar + follow — avatar overflows banner with -mt-6 -->
           <div class="flex justify-between items-start">
             <div class="relative -mt-6 mb-1.5">
               <img id="card-avatar" src="" alt="" class="w-12 h-12 rounded-full border-[3px] border-[#090A10] object-cover bg-slate-800 shadow-lg" />
@@ -275,55 +275,50 @@
         </div>
       </div>
 
-      <!-- LinkedIn Snapshot -->
-      <div class="flex-1 min-w-0 bg-[#090A10]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden slide-in" style="animation-delay:0.04s">
+      <!-- LinkedIn Snapshot — hidden entirely when no LinkedIn URL -->
+      <div id="li-card-wrapper" class="flex-1 min-w-0 bg-[#090A10]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden slide-in" style="animation-delay:0.04s">
         <div class="h-12 relative" style="background:linear-gradient(135deg,rgba(10,102,194,0.35),rgba(10,10,25,0.6))">
           <div class="absolute inset-0 bg-gradient-to-t from-[#090A10]/80 to-transparent"></div>
           <div class="absolute top-2 left-3 flex items-center gap-1.5">
             <svg class="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
             <span class="text-[9px] font-semibold text-[#5AAAF0] uppercase tracking-widest relative z-10">LinkedIn</span>
           </div>
-          <!-- LinkedIn avatar in top-right of banner -->
-          <div class="absolute top-1.5 right-3 z-10">
-            <img id="card-li-avatar" src="" alt=""
-              class="w-10 h-10 rounded-full border-2 border-[#0A66C2]/60 object-cover bg-slate-800 shadow-md" />
-          </div>
         </div>
         <div class="px-3 pb-3">
-          <!-- Available -->
-          <div id="card-li-available">
-            <div class="mt-2 mb-1.5 pr-2">
-              <div id="card-li-name" class="text-sm font-bold text-white leading-tight mb-0"></div>
-              <div id="card-li-headline" class="text-[10px] text-slate-400 mb-0.5"></div>
-              <div id="card-li-company-row" class="flex items-center gap-1 text-[10px] text-slate-500 mb-1.5">
+          <!-- Avatar overflows banner with same -mt-6 as X, but on the right -->
+          <div class="flex justify-between items-start">
+            <div class="mt-2 mb-1.5 flex-1 min-w-0">
+              <div id="card-li-name" class="text-sm font-bold text-white leading-tight mb-0 truncate"></div>
+              <div id="card-li-headline" class="text-[10px] text-slate-400 mb-0.5 truncate"></div>
+              <div class="flex items-center gap-1 text-[10px] text-slate-500 mb-1.5">
                 <svg class="w-2.5 h-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                 <span id="card-li-company-text" class="truncate"></span>
               </div>
             </div>
-            <!-- Bio -->
-            <p id="card-li-bio" class="text-[10px] text-slate-300 leading-relaxed mb-2 line-clamp-3"></p>
-            <!-- Stats -->
-            <div class="flex gap-3 pt-1 border-t border-white/5 mb-2">
-              <div class="text-center">
-                <div id="card-li-connections" class="font-bold text-white text-xs"></div>
-                <div class="text-slate-600 text-[9px]">Connections</div>
-              </div>
-              <div class="text-center">
-                <div id="card-li-location" class="font-bold text-white text-xs truncate max-w-[110px]"></div>
-                <div class="text-slate-600 text-[9px]">Location</div>
-              </div>
+            <!-- Avatar aligned at same vertical position as X avatar (-mt-6) -->
+            <div class="relative -mt-6 mb-1.5 ml-2 flex-shrink-0">
+              <img id="card-li-avatar" src="" alt=""
+                class="w-12 h-12 rounded-full border-[3px] border-[#090A10] object-cover bg-slate-800 shadow-lg" />
             </div>
-            <a id="card-li-btn" href="#" target="_blank" rel="noopener noreferrer"
-              class="inline-flex items-center gap-1 px-2.5 py-1 bg-[#0A66C2]/20 hover:bg-[#0A66C2]/30 border border-[#0A66C2]/40 text-[#5AAAF0] font-semibold text-[10px] rounded-full transition-all">
-              <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-              View on LinkedIn
-            </a>
           </div>
-          <!-- Unavailable -->
-          <div id="card-li-unavailable" class="hidden flex flex-col items-center justify-center h-28 text-center gap-2 opacity-35">
-            <svg class="w-7 h-7 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
-            <span class="text-[11px] text-slate-500">LinkedIn not available</span>
+          <!-- Bio -->
+          <p id="card-li-bio" class="text-[10px] text-slate-300 leading-relaxed mb-2 line-clamp-3"></p>
+          <!-- Stats -->
+          <div class="flex gap-3 pt-1 border-t border-white/5 mb-2">
+            <div class="text-center">
+              <div id="card-li-connections" class="font-bold text-white text-xs"></div>
+              <div class="text-slate-600 text-[9px]">Connections</div>
+            </div>
+            <div class="text-center">
+              <div id="card-li-location" class="font-bold text-white text-xs truncate max-w-[110px]"></div>
+              <div class="text-slate-600 text-[9px]">Location</div>
+            </div>
           </div>
+          <a id="card-li-btn" href="#" target="_blank" rel="noopener noreferrer"
+            class="inline-flex items-center gap-1 px-2.5 py-1 bg-[#0A66C2]/20 hover:bg-[#0A66C2]/30 border border-[#0A66C2]/40 text-[#5AAAF0] font-semibold text-[10px] rounded-full transition-all">
+            <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            View on LinkedIn
+          </a>
         </div>
       </div>
     </div>
@@ -997,12 +992,10 @@
     // ── LinkedIn Snapshot ──
     const liUrl = linkedinUrls[p.id] || null;
     const extra = liExtra[p.id] || {};
-    const liAvailable   = document.getElementById('card-li-available');
-    const liUnavailable = document.getElementById('card-li-unavailable');
+    const liWrapper = document.getElementById('li-card-wrapper');
 
     if (liUrl) {
-      liAvailable.classList.remove('hidden');
-      liUnavailable.classList.add('hidden');
+      liWrapper.classList.remove('hidden');
       // Avatar (reuse X profile photo)
       const liAv = document.getElementById('card-li-avatar');
       liAv.src = `https://unavatar.io/twitter/${p.handle}`;
@@ -1017,10 +1010,7 @@
       document.getElementById('card-li-location').textContent    = extra.location    || '—';
       document.getElementById('card-li-btn').href                = liUrl;
     } else {
-      // Hide avatar when no LinkedIn
-      document.getElementById('card-li-avatar').src = '';
-      liAvailable.classList.add('hidden');
-      liUnavailable.classList.remove('hidden');
+      liWrapper.classList.add('hidden');
     }
 
     // ── Career Timeline (horizontal, oldest → newest left to right) ──
