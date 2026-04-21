@@ -268,11 +268,16 @@
             <svg class="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
             <span class="text-[9px] font-semibold text-[#5AAAF0] uppercase tracking-widest relative z-10">LinkedIn</span>
           </div>
+          <!-- LinkedIn avatar in top-right of banner -->
+          <div class="absolute top-1.5 right-3 z-10">
+            <img id="card-li-avatar" src="" alt=""
+              class="w-10 h-10 rounded-full border-2 border-[#0A66C2]/60 object-cover bg-slate-800 shadow-md" />
+          </div>
         </div>
         <div class="px-3 pb-3">
           <!-- Available -->
           <div id="card-li-available">
-            <div class="mt-2 mb-1.5">
+            <div class="mt-2 mb-1.5 pr-2">
               <div id="card-li-name" class="text-sm font-bold text-white leading-tight mb-0"></div>
               <div id="card-li-headline" class="text-[10px] text-slate-400 mb-0.5"></div>
               <div id="card-li-company-row" class="flex items-center gap-1 text-[10px] text-slate-500 mb-1.5">
@@ -983,6 +988,12 @@
     if (liUrl) {
       liAvailable.classList.remove('hidden');
       liUnavailable.classList.add('hidden');
+      // Avatar (reuse X profile photo)
+      const liAv = document.getElementById('card-li-avatar');
+      liAv.src = `https://unavatar.io/twitter/${p.handle}`;
+      liAv.onerror = () => {
+        liAv.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=0a3d6b&color=5aaaf0&size=80`;
+      };
       document.getElementById('card-li-name').textContent        = p.name;
       document.getElementById('card-li-headline').textContent    = p.role;
       document.getElementById('card-li-company-text').textContent= p.associated;
@@ -991,14 +1002,16 @@
       document.getElementById('card-li-location').textContent    = extra.location    || '—';
       document.getElementById('card-li-btn').href                = liUrl;
     } else {
+      // Hide avatar when no LinkedIn
+      document.getElementById('card-li-avatar').src = '';
       liAvailable.classList.add('hidden');
       liUnavailable.classList.remove('hidden');
     }
 
-    // ── Career Timeline (horizontal) ──
-    const history = careerHistory[p.id] || [];
+    // ── Career Timeline (horizontal, oldest → newest left to right) ──
+    const history = [...(careerHistory[p.id] || [])].reverse();
     document.getElementById('career-timeline').innerHTML = history.length
-      ? history.map((h, isLast) => `
+      ? history.map(h => `
           <div class="career-step">
             <div class="career-step-connector">
               <div class="c-dot"></div>
@@ -1006,8 +1019,8 @@
             </div>
             <div class="career-step-body">
               <div class="text-[9px] text-indigo-400 font-mono mb-0.5">${h.y}</div>
-              <div class="text-[10px] font-semibold text-slate-200 leading-tight mb-0.5">${h.r}</div>
-              <div class="text-[9px] text-slate-500 leading-tight">${h.c}</div>
+              <div class="text-[11px] font-semibold text-white leading-tight mb-0.5">${h.c}</div>
+              <div class="text-[9px] text-slate-400 leading-tight">${h.r}</div>
             </div>
           </div>`).join('')
       : '<p class="text-[11px] text-slate-600 italic">No career data available.</p>';
