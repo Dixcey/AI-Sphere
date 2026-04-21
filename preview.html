@@ -140,38 +140,84 @@
   </div>
 
   <!-- ── FLOATING DETAIL CARD ────────────────────────── -->
-  <div id="detail-card" class="fixed top-6 right-6 w-[360px] z-50 hidden flex-col gap-3">
+  <div id="detail-card" class="fixed top-6 right-6 w-[680px] z-50 hidden flex-col gap-3">
 
     <!-- Profile card -->
     <div class="bg-[#090A10]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden slide-in">
-      <div id="card-banner" class="h-20 relative">
+      <div id="card-banner" class="h-16 relative">
         <div class="absolute inset-0 bg-gradient-to-t from-[#090A10]/80 to-transparent"></div>
         <button id="close-card" class="absolute top-3 right-3 p-1.5 bg-black/40 hover:bg-black/60 rounded-full text-white/70 hover:text-white transition-colors z-10">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
-      <div class="px-4 pb-4">
-        <div class="flex justify-between items-start">
-          <div class="relative -mt-10 mb-2">
-            <img id="card-avatar" src="" alt="" class="w-16 h-16 rounded-full border-4 border-[#090A10] object-cover bg-slate-800 shadow-lg" />
-            <div id="card-dot" class="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-[#090A10]"></div>
+      <!-- Two-column body -->
+      <div class="flex">
+        <!-- ── X Column ── -->
+        <div class="flex-1 px-4 pb-4 min-w-0">
+          <!-- Section label -->
+          <div class="flex items-center gap-1.5 mb-2 -mt-1 pt-2">
+            <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.737-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">X / Twitter</span>
           </div>
-          <a id="card-follow" href="#" target="_blank" rel="noopener noreferrer"
-            class="mt-2 px-4 py-1.5 bg-white hover:bg-white/90 text-black font-bold text-xs rounded-full transition-all">
-            Follow on X
-          </a>
+          <div class="flex justify-between items-start">
+            <div class="relative -mt-8 mb-2">
+              <img id="card-avatar" src="" alt="" class="w-14 h-14 rounded-full border-4 border-[#090A10] object-cover bg-slate-800 shadow-lg" />
+              <div id="card-dot" class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-[#090A10]"></div>
+            </div>
+            <a id="card-follow" href="#" target="_blank" rel="noopener noreferrer"
+              class="mt-1 px-3 py-1 bg-white hover:bg-white/90 text-black font-bold text-[11px] rounded-full transition-all flex items-center gap-1">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.737-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              Follow
+            </a>
+          </div>
+          <h2 id="card-name" class="text-sm font-bold text-white mb-0"></h2>
+          <div id="card-handle" class="text-slate-500 text-[11px] mb-1.5"></div>
+          <div class="flex items-center gap-1.5 mb-1.5">
+            <span id="card-group-badge" class="text-[9px] font-semibold px-1.5 py-0.5 rounded-full"></span>
+            <span id="card-role" class="text-[11px] text-slate-400 truncate"></span>
+          </div>
+          <p id="card-bio" class="text-[11px] text-slate-300 leading-relaxed mb-2"></p>
+          <div id="card-tags" class="flex flex-wrap gap-1 mb-2.5"></div>
+          <div class="flex gap-4 text-sm">
+            <div><span id="card-followers" class="font-bold text-white text-xs"></span><span class="text-slate-500 text-[10px] ml-1">Followers</span></div>
+            <div><span id="card-connections" class="font-bold text-white text-xs"></span><span class="text-slate-500 text-[10px] ml-1">Connections</span></div>
+          </div>
         </div>
-        <h2 id="card-name" class="text-base font-bold text-white mb-0.5"></h2>
-        <div id="card-handle" class="text-slate-500 text-xs mb-2"></div>
-        <div class="flex items-center gap-2 mb-2">
-          <span id="card-group-badge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full"></span>
-          <span id="card-role" class="text-xs text-slate-400 truncate"></span>
-        </div>
-        <p id="card-bio" class="text-xs text-slate-300 leading-relaxed mb-2.5"></p>
-        <div id="card-tags" class="flex flex-wrap gap-1 mb-3"></div>
-        <div class="flex gap-4 text-sm">
-          <div><span id="card-followers" class="font-bold text-white text-sm"></span><span class="text-slate-500 text-xs ml-1">Followers</span></div>
-          <div><span id="card-connections" class="font-bold text-white text-sm"></span><span class="text-slate-500 text-xs ml-1">Connections</span></div>
+
+        <!-- Divider -->
+        <div class="w-px bg-white/10 my-3 flex-shrink-0"></div>
+
+        <!-- ── LinkedIn Column ── -->
+        <div class="flex-1 px-4 pb-4 min-w-0" id="card-li-section">
+          <!-- Section label -->
+          <div class="flex items-center gap-1.5 mb-2 pt-2">
+            <svg class="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">LinkedIn</span>
+          </div>
+          <div id="card-li-available">
+            <div class="flex items-center gap-2.5 mb-2">
+              <img id="card-li-avatar" src="" alt="" class="w-10 h-10 rounded-full border-2 border-white/10 object-cover bg-slate-800 flex-shrink-0" />
+              <div class="min-w-0">
+                <div id="card-li-name" class="text-sm font-semibold text-white truncate"></div>
+                <div id="card-li-role" class="text-[10px] text-slate-400 truncate"></div>
+              </div>
+            </div>
+            <div id="card-li-company" class="flex items-center gap-1.5 mb-2.5 text-[11px] text-slate-400">
+              <svg class="w-3 h-3 flex-shrink-0 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              <span id="card-li-company-text" class="truncate"></span>
+            </div>
+            <a id="card-li-btn" href="#" target="_blank" rel="noopener noreferrer"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0A66C2]/20 hover:bg-[#0A66C2]/30 border border-[#0A66C2]/40 text-[#5AAAF0] font-semibold text-[11px] rounded-full transition-all">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+              View on LinkedIn
+            </a>
+          </div>
+          <div id="card-li-unavailable" class="hidden">
+            <div class="flex flex-col items-center justify-center h-20 text-center gap-1.5 opacity-40">
+              <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+              <span class="text-[11px] text-slate-500">LinkedIn not available</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -375,6 +421,63 @@
   ];
 
   // ═══════════════════════════════════════════════
+  // LINKEDIN URL MAP
+  // ═══════════════════════════════════════════════
+  const linkedinUrls = {
+    sama:            'https://www.linkedin.com/in/sama/',
+    satyanadella:    'https://www.linkedin.com/in/satyanadella/',
+    levie:           'https://www.linkedin.com/in/boxaaron/',
+    karpathy:        'https://www.linkedin.com/in/karpathy/',
+    barmstrong:      'https://www.linkedin.com/in/barmstrong/',
+    andrewng:        'https://www.linkedin.com/in/andrewyng/',
+    ylecun:          'https://www.linkedin.com/in/ylecun/',
+    gdb:             'https://www.linkedin.com/in/thegdb/',
+    demishassabis:   'https://www.linkedin.com/in/demishassabis/',
+    palmerluckey:    'https://www.linkedin.com/in/palmer-luckey-21a16959/',
+    fchollet:        'https://www.linkedin.com/in/fchollet/',
+    ilyasut:         'https://www.linkedin.com/in/ilya-sutskever/',
+    drfeifei:        'https://www.linkedin.com/in/feifei-li-3667885/',
+    geoffreyhinton:  null,
+    paraga:          'https://www.linkedin.com/in/paragagrawalcmu/',
+    akhaliq:         'https://www.linkedin.com/in/ahsenkhaliq/',
+    austen:          'https://www.linkedin.com/in/austenallred/',
+    miramurati:      'https://www.linkedin.com/in/mira-murati-4b39a066/',
+    jeffdean:        'https://www.linkedin.com/in/jeff-dean-8b212555/',
+    rasbt:           'https://www.linkedin.com/in/sebastianraschka/',
+    hardmaru:        'https://www.linkedin.com/in/hardmaru/',
+    alexwang:        'https://www.linkedin.com/in/alexandrwang/',
+    addyosmani:      'https://www.linkedin.com/in/addyosmani/',
+    iangoodfellow:   'https://www.linkedin.com/in/ian-goodfellow-b7187213/',
+    jimfan:          'https://www.linkedin.com/in/jim-fan/',
+    minchoi:         'https://www.linkedin.com/in/min-choi/',
+    deryaunutmaz:    'https://www.linkedin.com/in/deryaunutmaz/',
+    emostaque:       'https://www.linkedin.com/in/emad-mostaque-9840ba274/',
+    sriramk:         'https://www.linkedin.com/in/sriramkrishnan/',
+    omarsar0:        'https://www.linkedin.com/in/omarsanseviero/',
+    soumith:         'https://www.linkedin.com/in/soumith/',
+    logank:          'https://www.linkedin.com/in/logankilpatrick/',
+    jeremyhoward:    'https://www.linkedin.com/in/howardjeremy/',
+    steipete:        'https://www.linkedin.com/in/steipete/',
+    tunguz:          'https://www.linkedin.com/in/bojantunguz/',
+    bcherny:         'https://www.linkedin.com/in/bcherny/',
+    mustafasuleyman: 'https://www.linkedin.com/in/mustafa-suleyman/',
+    gavinbaker:      'https://www.linkedin.com/in/gavinbaker-portfoliomanager/',
+    eliezeryud:      'https://www.linkedin.com/in/eliezer-yudkowsky-99a40a25a/',
+    yacinemtb:       'https://www.linkedin.com/in/yacinemtb/',
+    kazufujisawa:    null,
+    oriolvinyals:    'https://www.linkedin.com/in/oriol-vinyals-00b3366/',
+    clementdelangue: 'https://www.linkedin.com/in/clementdelangue/',
+    aelluswamy:      'https://www.linkedin.com/in/eashokkumar/',
+    schmidhuber:     'https://www.linkedin.com/in/j%C3%BCrgen-schmidhuber-39226872/',
+    rileygoodside:   'https://www.linkedin.com/in/goodside/',
+    mitchellh:       'https://www.linkedin.com/in/mitchellh/',
+    darioamodei:     'https://www.linkedin.com/in/dario-amodei-3934934/',
+    arankomatsuzaki: 'https://www.linkedin.com/in/aran-komatsuzaki-312a4188/',
+    chrmanning:      'https://www.linkedin.com/in/christopher-manning-011575/',
+    elonmusk:        null,
+  };
+
+  // ═══════════════════════════════════════════════
   // STATE
   // ═══════════════════════════════════════════════
   let selectedPerson = null;
@@ -539,7 +642,7 @@
 
     const gb = document.getElementById('card-group-badge');
     gb.textContent = p.group.charAt(0).toUpperCase() + p.group.slice(1);
-    gb.className   = `text-[10px] font-semibold px-2 py-0.5 rounded-full badge-${p.group}`;
+    gb.className   = `text-[9px] font-semibold px-1.5 py-0.5 rounded-full badge-${p.group}`;
 
     document.getElementById('card-role').textContent = `${p.role} @ ${p.associated}`;
     document.getElementById('card-bio').textContent  = p.bio;
@@ -551,6 +654,31 @@
     document.getElementById('card-followers').textContent = fmt(p.followers);
     const connCount = links.filter(l => l.source===p.id || l.target===p.id || l.source?.id===p.id || l.target?.id===p.id).length;
     document.getElementById('card-connections').textContent = connCount;
+
+    // LinkedIn column
+    const liUrl = linkedinUrls[p.id] || null;
+    const liAvailable = document.getElementById('card-li-available');
+    const liUnavailable = document.getElementById('card-li-unavailable');
+
+    if (liUrl) {
+      liAvailable.classList.remove('hidden');
+      liUnavailable.classList.add('hidden');
+
+      // Reuse X avatar for LinkedIn (same person)
+      const liAvatarEl = document.getElementById('card-li-avatar');
+      liAvatarEl.src = `https://unavatar.io/twitter/${p.handle}`;
+      liAvatarEl.onerror = () => {
+        liAvatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=0a3d6b&color=5aaaf0&size=80`;
+      };
+
+      document.getElementById('card-li-name').textContent = p.name;
+      document.getElementById('card-li-role').textContent = p.role;
+      document.getElementById('card-li-company-text').textContent = p.associated;
+      document.getElementById('card-li-btn').href = liUrl;
+    } else {
+      liAvailable.classList.add('hidden');
+      liUnavailable.classList.remove('hidden');
+    }
 
     renderSentiment(p.sentiment);
   }
