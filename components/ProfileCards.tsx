@@ -14,9 +14,9 @@ const GROUP_BANNERS: Record<string, string> = {
 };
 
 const GROUP_BADGE_CLASS: Record<string, string> = {
-  founder:    'bg-[#A3D4FF]/15 text-[#A3D4FF]',
-  researcher: 'bg-[#E0B3FF]/15 text-[#E0B3FF]',
-  investor:   'bg-[#B3FFB3]/15 text-[#B3FFB3]',
+  founder:    'bg-[#38BDF8]/15 text-[#38BDF8]',
+  researcher: 'bg-[#E879F9]/15 text-[#E879F9]',
+  investor:   'bg-[#4ADE80]/15 text-[#4ADE80]',
   company:    'bg-slate-500/15 text-slate-300',
   media:      'bg-slate-500/15 text-slate-300',
 };

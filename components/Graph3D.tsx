@@ -194,11 +194,11 @@ const Graph3D: React.FC<Graph3DProps> = ({ data, onNodeClick, onClearSelection, 
       case 'company':
         return '#FFD4A3'; // Light peach/orange
       case 'founder':
-        return '#A3D4FF'; // Light sky blue
+        return '#38BDF8'; // Vivid sky blue (matches preview.html legend)
       case 'researcher':
-        return '#E0B3FF'; // Light lavender
+        return '#E879F9'; // Vivid fuchsia
       case 'investor':
-        return '#B3FFB3'; // Light mint green
+        return '#4ADE80'; // Vivid lime
       case 'media':
         return '#FFB3D9'; // Light pink
       default:

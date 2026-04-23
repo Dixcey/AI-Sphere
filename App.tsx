@@ -333,10 +333,13 @@ export default function App() {
                     onClose={closeSelection}
                 />
 
-                {/* Row 2 — Career Mobility timeline */}
+                {/* Row 2 — Sentiment Shift (only renders when a meaningful transition exists) */}
+                <SentimentEvolutionChart personId={selectedNode.id} />
+
+                {/* Row 3 — Career Mobility timeline */}
                 <CareerMobility personId={selectedNode.id} />
 
-                {/* Row 3 — AI Sentiment (Gemini) + Sentiment Evolution chart */}
+                {/* Row 4 — AI Sentiment (Gemini) */}
                 <div className="bg-[#090A10]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl pointer-events-auto p-3.5">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
@@ -403,12 +406,9 @@ export default function App() {
                   {!sentimentLoading && !sentimentScores && (
                     <p className="text-xs text-slate-500 italic">No API key configured for sentiment analysis.</p>
                   )}
-
-                  {/* Sentiment evolution across career (static curated data) */}
-                  <SentimentEvolutionChart personId={selectedNode.id} />
                 </div>
 
-                {/* Row 4 — AI Topics chips */}
+                {/* Row 5 — AI Topics chips */}
                 <TopicChips topics={selectedNode.bioTags} />
 
         </div>
@@ -425,9 +425,9 @@ export default function App() {
         </button>
         <div className={`flex flex-col gap-1 overflow-hidden transition-all duration-300 ease-in-out ${isLegendOpen ? 'mt-3 max-h-60 opacity-100' : 'max-h-0 opacity-0'}`}>
           {[
-            { key: 'founder', color: '#A3D4FF', label: 'Founder / Builder' },
-            { key: 'researcher', color: '#E0B3FF', label: 'Researcher / Academia' },
-            { key: 'investor', color: '#B3FFB3', label: 'Investor' },
+            { key: 'founder', color: '#38BDF8', label: 'Founder / Builder' },
+            { key: 'researcher', color: '#E879F9', label: 'Researcher / Academia' },
+            { key: 'investor', color: '#4ADE80', label: 'Investor' },
           ].map(cat => (
             <button
               key={cat.key}

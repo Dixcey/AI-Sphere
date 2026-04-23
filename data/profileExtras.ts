@@ -142,7 +142,6 @@ export const careerHistory: Record<string, CareerStage[]> = {
   ],
   levie: [
     { y: '2005–',   r: 'CEO & Co-founder',           c: 'Box' },
-    { y: '2023–',   r: 'Board Member',               c: 'Salesforce' },
   ],
   karpathy: [
     { y: '2024–',   r: 'Founder',                    c: 'Eureka Labs' },
@@ -152,7 +151,7 @@ export const careerHistory: Record<string, CareerStage[]> = {
   brian_armstrong: [
     { y: '2012–',   r: 'CEO & Co-founder',           c: 'Coinbase' },
     { y: '2011–12', r: 'Software Engineer',          c: 'Airbnb' },
-    { y: '2009–11', r: 'Software Engineer',          c: 'IBM' },
+    { y: '2006–11', r: 'Consultant',                 c: 'Deloitte' },
   ],
   andrewyng: [
     { y: '2017–',   r: 'Founder',                    c: 'DeepLearning.AI' },
@@ -167,8 +166,8 @@ export const careerHistory: Record<string, CareerStage[]> = {
   ],
   gdb: [
     { y: '2015–',   r: 'Co-founder & President',     c: 'OpenAI' },
-    { y: '2010–15', r: 'CTO',                        c: 'Stripe' },
-    { y: '2008–10', r: 'Founding Engineer',          c: 'Various startups' },
+    { y: '2013–15', r: 'CTO',                        c: 'Stripe' },
+    { y: '2010–13', r: 'Founding Engineer',          c: 'Stripe' },
   ],
   demishassabis: [
     { y: '2023–',   r: 'CEO',                        c: 'Google DeepMind' },
@@ -184,9 +183,9 @@ export const careerHistory: Record<string, CareerStage[]> = {
     { y: '2014–15', r: 'Machine Learning Engineer',  c: 'Halide' },
   ],
   ilyasut: [
-    { y: '2023–',   r: 'Co-founder & Chief Scientist', c: 'Safe Superintelligence (SSI)' },
-    { y: '2015–23', r: 'Chief Scientist',            c: 'OpenAI' },
-    { y: '2012–15', r: 'Research Scientist',         c: 'Google Brain' },
+    { y: '2024–',   r: 'Co-founder & Chief Scientist', c: 'Safe Superintelligence (SSI)' },
+    { y: '2015–24', r: 'Chief Scientist',            c: 'OpenAI' },
+    { y: '2013–15', r: 'Research Scientist',         c: 'Google Brain' },
   ],
   drfeifei: [
     { y: '2024–',   r: 'CEO',                        c: 'World Labs' },
@@ -202,7 +201,7 @@ export const careerHistory: Record<string, CareerStage[]> = {
   paraga: [
     { y: '2021–22', r: 'CEO',                        c: 'Twitter' },
     { y: '2017–21', r: 'CTO',                        c: 'Twitter' },
-    { y: '2014–17', r: 'SVP, Machine Learning',      c: 'Twitter' },
+    { y: '2011–17', r: 'Software Engineer / Dist. Engineer', c: 'Twitter' },
   ],
   _akhaliq: [
     { y: '2020–',   r: 'AI Research',                c: 'Hugging Face' },
@@ -213,7 +212,7 @@ export const careerHistory: Record<string, CareerStage[]> = {
     { y: '2017–23', r: 'Co-founder & CEO',           c: 'Lambda School / BloomTech' },
   ],
   miramurati: [
-    { y: '2024–',   r: 'Founder',                    c: 'New AI company (stealth)' },
+    { y: '2024–',   r: 'Founder & CEO',              c: 'Thinking Machines Lab' },
     { y: '2022–24', r: 'CTO',                        c: 'OpenAI' },
     { y: '2018–22', r: 'VP Product & Partnerships',  c: 'OpenAI' },
   ],
@@ -229,12 +228,12 @@ export const careerHistory: Record<string, CareerStage[]> = {
   ],
   hardmaru: [
     { y: '2023–',   r: 'Co-founder & CEO',           c: 'Sakana AI' },
-    { y: '2015–23', r: 'Research Director',          c: 'Google Brain' },
-    { y: '2012–15', r: 'PhD Researcher',             c: 'University of Toronto' },
+    { y: '2016–23', r: 'Research Scientist',         c: 'Google Brain' },
+    { y: '2012–16', r: 'PhD Researcher',             c: 'University of Toronto' },
   ],
   alexandr_wang: [
-    { y: '2024–',   r: 'Chief AI Officer',           c: 'Meta' },
-    { y: '2016–24', r: 'Founder & CEO',              c: 'Scale AI' },
+    { y: '2025–',   r: 'Chief AI Officer',           c: 'Meta' },
+    { y: '2016–25', r: 'Founder & CEO',              c: 'Scale AI' },
   ],
   addyosmani: [
     { y: '2022–',   r: 'Director, Google Cloud AI',  c: 'Google' },
@@ -299,9 +298,10 @@ export const careerHistory: Record<string, CareerStage[]> = {
     { y: '2015–17', r: 'Engineer',                   c: 'Various startups' },
   ],
   mustafasuleyman: [
-    { y: '2023–',   r: 'CEO, Microsoft AI',          c: 'Microsoft' },
-    { y: '2022–23', r: 'CEO',                        c: 'Inflection AI' },
-    { y: '2010–22', r: 'Co-founder & VP Applied AI', c: 'DeepMind / Google' },
+    { y: '2024–',   r: 'CEO, Microsoft AI',          c: 'Microsoft' },
+    { y: '2022–24', r: 'Co-founder & CEO',           c: 'Inflection AI' },
+    { y: '2019–22', r: 'VP, Consumer AI',            c: 'Google' },
+    { y: '2010–19', r: 'Co-founder & Head of Applied AI', c: 'DeepMind' },
   ],
   gavinsbaker: [
     { y: '2019–',   r: 'Managing Partner',           c: 'Atreides Management' },
@@ -320,7 +320,7 @@ export const careerHistory: Record<string, CareerStage[]> = {
   ],
   oriolvinyalsml: [
     { y: '2013–',   r: 'VP of Research',             c: 'Google DeepMind' },
-    { y: '2012–13', r: 'Postdoctoral Researcher',    c: 'University of California, San Diego' },
+    { y: '2010–13', r: 'PhD Researcher',             c: 'University of California, Berkeley' },
   ],
   clementdelangue: [
     { y: '2016–',   r: 'Co-founder & CEO',           c: 'Hugging Face' },
@@ -331,7 +331,7 @@ export const careerHistory: Record<string, CareerStage[]> = {
     { y: '2015–17', r: 'ML Engineer',                c: 'Various startups' },
   ],
   schmidhuberai: [
-    { y: '2014–',   r: 'Director, AI Initiative',    c: 'KAUST' },
+    { y: '2021–',   r: 'Director, AI Initiative',    c: 'KAUST' },
     { y: '1995–',   r: 'Director',                   c: 'IDSIA (Swiss AI Lab)' },
     { y: '1992–95', r: 'Postdoctoral Researcher',    c: 'University of Colorado' },
   ],
@@ -355,7 +355,8 @@ export const careerHistory: Record<string, CareerStage[]> = {
   ],
   chrmanning: [
     { y: '1999–',   r: 'Professor & Director, NLP Group', c: 'Stanford University' },
-    { y: '1994–99', r: 'Assistant Professor',        c: 'Carnegie Mellon University' },
+    { y: '1996–99', r: 'Lecturer',                   c: 'University of Sydney' },
+    { y: '1994–96', r: 'Assistant Professor',        c: 'Carnegie Mellon University' },
   ],
   elonmusk: [
     { y: '2023–',   r: 'CEO',                        c: 'xAI' },
@@ -382,7 +383,6 @@ export const sentimentEvolution: Record<string, SentimentStage[]> = {
   ],
   levie: [
     { reg: 0.20, use: 0.85, tru: 0.65, age: 0.80 },
-    { reg: 0.10, use: 0.70, tru: 0.55, age: 0.45 },
   ],
   karpathy: [
     { reg: -0.10, use: 0.80, tru: 0.65, age: 0.70 },  // Eureka Labs
@@ -542,9 +542,10 @@ export const sentimentEvolution: Record<string, SentimentStage[]> = {
     { reg: 0.10, use: 0.72, tru: 0.60, age: 0.50 },
   ],
   mustafasuleyman: [
-    { reg: 0.65, use: 0.70, tru: 0.25, age: 0.65 },
-    { reg: 0.60, use: 0.72, tru: 0.28, age: 0.62 },
-    { reg: 0.40, use: 0.76, tru: 0.42, age: 0.55 },
+    { reg: 0.65, use: 0.70, tru: 0.25, age: 0.65 },  // Microsoft AI
+    { reg: 0.55, use: 0.72, tru: 0.28, age: 0.62 },  // Inflection AI
+    { reg: 0.30, use: 0.76, tru: 0.42, age: 0.55 },  // Google (VP Consumer AI)
+    { reg: 0.40, use: 0.78, tru: 0.50, age: 0.45 },  // DeepMind
   ],
   gavinsbaker: [
     { reg: 0.20, use: 0.85, tru: 0.65, age: 0.75 },
@@ -599,8 +600,9 @@ export const sentimentEvolution: Record<string, SentimentStage[]> = {
     { reg: 0.10, use: 0.80, tru: 0.60, age: 0.50 },
   ],
   chrmanning: [
-    { reg: 0.45, use: 0.65, tru: 0.45, age: 0.35 },
-    { reg: 0.35, use: 0.65, tru: 0.52, age: 0.22 },
+    { reg: 0.45, use: 0.65, tru: 0.45, age: 0.35 },  // Stanford — policy-aware NLP
+    { reg: 0.38, use: 0.62, tru: 0.50, age: 0.25 },  // University of Sydney
+    { reg: 0.30, use: 0.65, tru: 0.52, age: 0.18 },  // CMU — pure NLP research
   ],
   elonmusk: [
     { reg: -0.90, use: 0.90, tru: 0.10, age: 0.90 },
