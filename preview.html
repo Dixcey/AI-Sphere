@@ -1242,131 +1242,107 @@
     const evoData = sentimentEvolution[personId];
     const careerData = careerHistory[personId];
     if (!evoData || evoData.length < 2 || !careerData || careerData.length < 2) {
-      container.innerHTML = '';
-      return;
+      container.innerHTML = ''; return;
     }
 
     const stages = [...evoData].reverse();   // oldest → newest
     const career = [...careerData].reverse();
 
     const dims = [
-      { key: 'reg', label: 'Regulation', color: '#60A5FA' },
-      { key: 'use', label: 'Usage',      color: '#34D399' },
-      { key: 'tru', label: 'Trust',      color: '#FB923C' },
-      { key: 'age', label: 'Agents',     color: '#C084FC' },
+      { key:'reg', label:'Regulation',    color:'#60A5FA', left:'Against',    right:'Pro'         },
+      { key:'use', label:'AI Usage',      color:'#34D399', left:'Restrictive',right:'Enthusiastic'},
+      { key:'tru', label:'Trust',         color:'#FB923C', left:'High Risk',  right:'High Trust'  },
+      { key:'age', label:'AI Agents',     color:'#C084FC', left:'Skeptical',  right:'Bullish'     },
     ];
 
-    // ── Significance filter: only dims with any shift ≥ 0.3 ───────────
-    const THRESHOLD = 0.3;
-    const significantDims = dims.filter(d => {
-      for (let i = 1; i < stages.length; i++) {
-        if (Math.abs(stages[i][d.key] - stages[i-1][d.key]) >= THRESHOLD) return true;
-      }
-      return false;
-    });
+    // ── Find the transition with the biggest total sentiment shift ────
+    // "biggest shift" = the single consecutive pair (i-1 → i) with highest
+    // sum of absolute deltas across all 4 dimensions.
+    const THRESHOLD = 0.25;
+    let bestIdx = -1, bestTotal = 0;
+    for (let i = 1; i < stages.length; i++) {
+      const total = dims.reduce((s, d) => s + Math.abs(stages[i][d.key] - stages[i-1][d.key]), 0);
+      if (total > bestTotal) { bestTotal = total; bestIdx = i; }
+    }
 
-    if (significantDims.length === 0) {
-      container.innerHTML = '<p class="text-[11px] text-slate-600 italic py-1">Sentiment stayed consistent across career stages — no major shift detected.</p>';
+    if (bestIdx === -1 || bestTotal < THRESHOLD) {
+      container.innerHTML = '<p class="text-[11px] text-slate-600 italic py-1">Sentiment stayed consistent across career stages.</p>';
       return;
     }
 
-    // ── Find the single biggest jump (for annotation bubble) ──────────
-    let bigJump = { dim: null, stageIdx: -1, delta: 0 };
-    significantDims.forEach(d => {
-      for (let i = 1; i < stages.length; i++) {
-        const delta = Math.abs(stages[i][d.key] - stages[i-1][d.key]);
-        if (delta > bigJump.delta) bigJump = { dim: d, stageIdx: i, delta };
-      }
-    });
+    const before = stages[bestIdx - 1];
+    const after  = stages[bestIdx];
+    const fromCo = career[bestIdx - 1];
+    const toCo   = career[bestIdx];
 
-    const W = 480, H = 128;
-    const PAD = { top: 16, right: 14, bottom: 32, left: 46 };
-    const chartW = W - PAD.left - PAD.right;
-    const chartH = H - PAD.top - PAD.bottom;
-    const n = stages.length;
-    const xStep = n > 1 ? chartW / (n - 1) : 0;
-    const yScale = v => PAD.top + chartH * (1 - (v + 1) / 2);
-    const xScale = i => PAD.left + i * xStep;
+    // Only show dims that actually changed meaningfully at this transition
+    const changedDims = dims.filter(d => Math.abs(after[d.key] - before[d.key]) >= THRESHOLD);
 
-    // Y-axis gridlines + labels
-    let gridLines = '';
-    [{ v: 1, label: 'Positive' }, { v: 0, label: 'Neutral' }, { v: -1, label: 'Negative' }].forEach(({ v, label }) => {
-      const y = yScale(v);
-      const isZero = v === 0;
-      gridLines += `<line x1="${PAD.left}" y1="${y}" x2="${W - PAD.right}" y2="${y}"
-        stroke="${isZero ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)'}"
-        stroke-width="${isZero ? 1 : 0.5}" stroke-dasharray="${isZero ? '' : '3,3'}"/>`;
-      gridLines += `<text x="${PAD.left - 4}" y="${y + 3}" text-anchor="end"
-        font-size="7.5" fill="${isZero ? 'rgba(203,213,225,0.7)' : 'rgba(148,163,184,0.5)'}"
-        font-family="Inter,sans-serif">${label}</text>`;
-    });
-
-    // Faint vertical dividers at each career transition
-    let transLines = '';
-    for (let i = 1; i < n; i++) {
-      const x = (xScale(i-1) + xScale(i)) / 2;
-      transLines += `<line x1="${x}" y1="${PAD.top}" x2="${x}" y2="${H - PAD.bottom}"
-        stroke="rgba(255,255,255,0.06)" stroke-width="0.5" stroke-dasharray="2,3"/>`;
+    // Helper: value → short text label
+    function valLabel(d, v) {
+      if (v >=  0.5) return d.right;
+      if (v <= -0.5) return d.left;
+      return 'Neutral';
     }
 
-    // Lines + dots — dim non-significant dims
-    let lines = '';
-    dims.forEach(d => {
-      const sig = significantDims.includes(d);
-      const pts = stages.map((s, i) => `${xScale(i)},${yScale(s[d.key])}`).join(' ');
-      lines += `<polyline points="${pts}" fill="none" stroke="${d.color}"
-        stroke-width="${sig ? 1.8 : 0.8}" stroke-linejoin="round" opacity="${sig ? 0.9 : 0.15}"/>`;
-      stages.forEach((s, i) => {
-        lines += `<circle cx="${xScale(i)}" cy="${yScale(s[d.key])}"
-          r="${sig ? 2.5 : 1.5}" fill="${d.color}" opacity="${sig ? 0.95 : 0.15}"/>`;
-      });
-    });
-
-    // Annotation bubble at the midpoint of the biggest jump
-    let annotation = '';
-    if (bigJump.dim) {
-      const i = bigJump.stageIdx;
-      const d = bigJump.dim;
-      const prevV = stages[i-1][d.key], currV = stages[i][d.key];
-      const dir = currV > prevV ? '↑' : '↓';
-      const cx = (xScale(i-1) + xScale(i)) / 2;
-      const cy = Math.min(yScale(prevV), yScale(currV)) - 6;
-      const lbl = `${dir} ${d.label}`;
-      const bw = lbl.length * 5.2 + 10;
-      annotation += `<rect x="${cx - bw/2}" y="${cy - 9}" width="${bw}" height="13" rx="3"
-        fill="${d.color}" fill-opacity="0.15" stroke="${d.color}" stroke-opacity="0.55" stroke-width="0.8"/>`;
-      annotation += `<text x="${cx}" y="${cy + 1}" text-anchor="middle"
-        font-size="7.5" font-weight="600" fill="${d.color}" font-family="Inter,sans-serif">${lbl}</text>`;
+    // Helper: render a mini sentiment bar (pure HTML, no SVG)
+    function miniBar(d, v) {
+      const pct = ((v + 1) / 2 * 100).toFixed(1);
+      return `<div style="position:relative;height:4px;background:rgba(255,255,255,0.08);border-radius:9999px;width:100%;">
+        <div style="position:absolute;top:50%;left:${pct}%;transform:translate(-50%,-50%);
+          width:8px;height:8px;border-radius:50%;background:${d.color};
+          box-shadow:0 0 5px ${d.color}88;"></div>
+      </div>`;
     }
 
-    // X-axis labels
-    let xLabels = '';
-    career.forEach((step, i) => {
-      const raw = step.c || '';
-      const lbl = raw.length > 10 ? raw.slice(0, 9) + '…' : raw;
-      const anchor = i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle';
-      xLabels += `<text x="${xScale(i)}" y="${H - 4}" text-anchor="${anchor}"
-        font-size="7.5" fill="rgba(148,163,184,0.8)" font-family="Inter,sans-serif">${lbl}</text>`;
-    });
+    // Delta badge: show magnitude + direction
+    function deltaBadge(d, bv, av) {
+      const delta = av - bv;
+      const sign  = delta > 0 ? '↑' : '↓';
+      const mag   = Math.abs(delta);
+      const intensity = mag >= 0.8 ? 'Major' : mag >= 0.5 ? 'Notable' : 'Moderate';
+      return `<span style="font-size:9px;font-weight:600;color:${d.color};
+        background:${d.color}18;border:1px solid ${d.color}44;
+        border-radius:4px;padding:1px 5px;white-space:nowrap;">${sign} ${intensity}</span>`;
+    }
 
-    // Legend — fade non-significant dims
-    const legendItems = dims.map(d => {
-      const sig = significantDims.includes(d);
-      return `<span style="display:inline-flex;align-items:center;gap:3px;margin-right:8px;opacity:${sig ? 1 : 0.3}">
-        <svg width="12" height="4"><line x1="0" y1="2" x2="12" y2="2" stroke="${d.color}" stroke-width="1.5"/></svg>
-        <span style="font-size:9px;color:rgba(203,213,225,0.85)">${d.label}</span>
-      </span>`;
+    const rows = changedDims.map(d => {
+      const bv = before[d.key], av = after[d.key];
+      return `
+        <div style="display:grid;grid-template-columns:68px 1fr 18px 1fr 70px;align-items:center;gap:6px;margin-bottom:8px;">
+          <span style="font-size:9px;color:rgba(148,163,184,0.9);font-weight:500;">${d.label}</span>
+          <div>
+            ${miniBar(d, bv)}
+            <div style="font-size:8px;color:rgba(148,163,184,0.55);margin-top:2px;text-align:center;">${valLabel(d, bv)}</div>
+          </div>
+          <span style="font-size:11px;color:rgba(148,163,184,0.4);text-align:center;">→</span>
+          <div>
+            ${miniBar(d, av)}
+            <div style="font-size:8px;color:rgba(148,163,184,0.55);margin-top:2px;text-align:center;">${valLabel(d, av)}</div>
+          </div>
+          ${deltaBadge(d, bv, av)}
+        </div>`;
     }).join('');
 
     container.innerHTML = `
-      <div style="margin-bottom:5px;display:flex;flex-wrap:wrap;">${legendItems}</div>
-      <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;">
-        ${gridLines}
-        ${transLines}
-        ${lines}
-        ${annotation}
-        ${xLabels}
-      </svg>`;
+      <div style="display:flex;align-items:center;gap:5px;margin-bottom:8px;flex-wrap:wrap;">
+        <span style="font-size:9px;font-weight:600;color:rgba(203,213,225,0.7);
+          background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+          border-radius:4px;padding:2px 6px;">${fromCo.c} ${fromCo.y ? '· ' + fromCo.y : ''}</span>
+        <span style="font-size:10px;color:rgba(99,102,241,0.7);">→</span>
+        <span style="font-size:9px;font-weight:600;color:rgba(203,213,225,0.7);
+          background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);
+          border-radius:4px;padding:2px 6px;">${toCo.c} ${toCo.y ? '· ' + toCo.y : ''}</span>
+        <span style="font-size:8px;color:rgba(148,163,184,0.4);margin-left:2px;">biggest shift</span>
+      </div>
+      <div style="display:grid;grid-template-columns:68px 1fr 18px 1fr 70px;align-items:center;gap:6px;margin-bottom:4px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,0.06);">
+        <span></span>
+        <span style="font-size:8px;color:rgba(100,116,139,0.7);text-align:center;">Before</span>
+        <span></span>
+        <span style="font-size:8px;color:rgba(100,116,139,0.7);text-align:center;">After</span>
+        <span></span>
+      </div>
+      ${rows}`;
   }
 
   function closeCard() {
