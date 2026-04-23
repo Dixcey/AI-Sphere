@@ -52,9 +52,9 @@
       color: #e2e8f0;
     }
 
-    .badge-founder    { background: rgba(163,212,255,0.15); color: #A3D4FF; }
-    .badge-researcher { background: rgba(224,179,255,0.15); color: #E0B3FF; }
-    .badge-investor   { background: rgba(179,255,179,0.15); color: #B3FFB3; }
+    .badge-founder    { background: rgba(56,189,248,0.15);  color: #38BDF8; }
+    .badge-researcher { background: rgba(232,121,249,0.15); color: #E879F9; }
+    .badge-investor   { background: rgba(74,222,128,0.15);  color: #4ADE80; }
 
     #graph-svg { display: block; width: 100%; height: 100%; }
 
@@ -209,15 +209,15 @@
         <div class="text-[10px] text-slate-500 uppercase tracking-wider mb-2 font-medium">Legend</div>
         <div class="flex flex-col gap-2">
           <div class="flex items-center gap-2">
-            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:#A3D4FF;box-shadow:0 0 6px #A3D4FF66"></div>
+            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:#38BDF8;box-shadow:0 0 6px #38BDF866"></div>
             <span class="text-[11px] text-slate-300">Founder / Builder</span>
           </div>
           <div class="flex items-center gap-2">
-            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:#E0B3FF;box-shadow:0 0 6px #E0B3FF66"></div>
+            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:#E879F9;box-shadow:0 0 6px #E879F966"></div>
             <span class="text-[11px] text-slate-300">Researcher / Academia</span>
           </div>
           <div class="flex items-center gap-2">
-            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:#B3FFB3;box-shadow:0 0 6px #B3FFB366"></div>
+            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:#4ADE80;box-shadow:0 0 6px #4ADE8066"></div>
             <span class="text-[11px] text-slate-300">Investor</span>
           </div>
         </div>
@@ -950,7 +950,7 @@
   let searchQuery    = '';
   let simulation, svgSel, linkSel, nodeSel;
 
-  const GROUP_COLORS  = { founder:'#A3D4FF', researcher:'#E0B3FF', investor:'#B3FFB3' };
+  const GROUP_COLORS  = { founder:'#38BDF8', researcher:'#E879F9', investor:'#4ADE80' };
   const GROUP_BANNERS = {
     founder:    'linear-gradient(135deg,rgba(30,64,175,.55),rgba(15,15,40,.6))',
     researcher: 'linear-gradient(135deg,rgba(88,28,135,.55),rgba(15,15,40,.6))',
@@ -1249,10 +1249,10 @@
     const career = [...careerData].reverse();
 
     const dims = [
-      { key:'reg', label:'Regulation',    color:'#FCD34D', left:'Against',    right:'Pro'         },
-      { key:'use', label:'AI Usage',      color:'#22D3EE', left:'Restrictive',right:'Enthusiastic'},
-      { key:'tru', label:'Trust',         color:'#FB7185', left:'High Risk',  right:'High Trust'  },
-      { key:'age', label:'AI Agents',     color:'#4ADE80', left:'Skeptical',  right:'Bullish'     },
+      { key:'reg', label:'Regulation',    color:'#60A5FA', left:'Against',    right:'Pro'         },
+      { key:'use', label:'AI Usage',      color:'#34D399', left:'Restrictive',right:'Enthusiastic'},
+      { key:'tru', label:'Trust',         color:'#FB923C', left:'High Risk',  right:'High Trust'  },
+      { key:'age', label:'AI Agents',     color:'#C084FC', left:'Skeptical',  right:'Bullish'     },
     ];
 
     // ── Find the transition with the biggest total sentiment shift ────
