@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Avoid stale sidebar when reopening from disk or via cached GitHub Pages -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>AI Sphere — Preview</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -142,7 +146,7 @@
       <!-- Header — mirrors the React app sidebar -->
       <div class="px-4 py-3 border-b border-white/10 bg-[#05060A]/50">
         <h1 class="text-xl font-bold text-white tracking-tight">Top AI Influencers on X</h1>
-        <p class="text-xs text-slate-400 mt-0.5">Data last updated: April 23, 2026</p>
+        <p id="sidebar-last-updated" class="text-xs text-slate-400 mt-0.5">Data last updated: April 23, 2026</p>
       </div>
 
       <!-- Search — mirrors the React app sidebar -->
@@ -994,6 +998,9 @@
     investor:   'linear-gradient(135deg,rgba(6,78,59,.55),rgba(15,15,40,.6))',
   };
 
+  /** Keep in sync with `LAST_UPDATED` in constants.ts (React app). */
+  const LAST_UPDATED = 'April 23, 2026';
+
   function fmt(n) {
     if (!n) return '0';
     if (n >= 1e6) return (n/1e6).toFixed(1)+'M';
@@ -1604,6 +1611,7 @@
   // ═══════════════════════════════════════════════
   // INIT
   // ═══════════════════════════════════════════════
+  document.getElementById('sidebar-last-updated').textContent = 'Data last updated: ' + LAST_UPDATED;
   renderSidebar();
   initGraph();
 
