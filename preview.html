@@ -235,34 +235,35 @@
       <div class="flex-1 min-w-0 bg-[#090A10]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden slide-in">
         <div id="card-banner" class="h-12 relative">
           <div class="absolute inset-0 bg-gradient-to-t from-[#090A10]/80 to-transparent"></div>
-          <button id="close-card" class="absolute top-2 right-2 p-1 bg-black/40 hover:bg-black/60 rounded-full text-white/70 hover:text-white transition-colors z-10">
+          <!-- X logo (top-left, mirror of LinkedIn card) -->
+          <div class="absolute top-2 left-3 flex items-center">
+            <svg class="w-3.5 h-3.5 flex-shrink-0 relative z-10" viewBox="0 0 24 24" fill="white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.737-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </div>
+          <!-- Close button (shown only when LinkedIn card is hidden, i.e. this is the only card) -->
+          <button id="close-card-x" class="hidden absolute top-2 right-2 p-1 bg-black/40 hover:bg-black/60 rounded-full text-white/70 hover:text-white transition-colors z-20">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
         <div class="px-3 pb-3">
-          <!-- Avatar + follow — avatar overflows banner with -mt-6 -->
+          <!-- Name info on left, avatar on right (overflows banner with -mt-6) — matches LinkedIn card -->
           <div class="flex justify-between items-start">
-            <div class="relative -mt-6 mb-1.5">
+            <div class="mt-2 mb-1.5 flex-1 min-w-0">
+              <h2 id="card-name" class="text-sm font-bold text-white leading-tight mb-0 truncate"></h2>
+              <div id="card-handle" class="text-slate-500 text-[10px] mb-1 truncate"></div>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span id="card-group-badge" class="text-[9px] font-semibold px-1.5 py-0.5 rounded-full"></span>
+                <span id="card-role" class="text-[10px] text-slate-400 truncate max-w-[140px]"></span>
+              </div>
+            </div>
+            <div class="relative -mt-6 mb-1.5 ml-2 flex-shrink-0">
               <img id="card-avatar" src="" alt="" class="w-12 h-12 rounded-full border-[3px] border-[#090A10] object-cover bg-slate-800 shadow-lg" />
               <div id="card-dot" class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[#090A10]"></div>
             </div>
-            <a id="card-follow" href="#" target="_blank" rel="noopener noreferrer"
-              class="mt-1 px-2.5 py-1 bg-white hover:bg-white/90 text-black font-bold text-[10px] rounded-full transition-all flex items-center gap-1">
-              <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.737-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-              Follow on X
-            </a>
-          </div>
-          <!-- Name / handle / badge -->
-          <h2 id="card-name" class="text-sm font-bold text-white leading-tight mb-0"></h2>
-          <div id="card-handle" class="text-slate-500 text-[10px] mb-1"></div>
-          <div class="flex items-center gap-1.5 mb-1.5 flex-wrap">
-            <span id="card-group-badge" class="text-[9px] font-semibold px-1.5 py-0.5 rounded-full"></span>
-            <span id="card-role" class="text-[10px] text-slate-400 truncate max-w-[160px]"></span>
           </div>
           <!-- Bio -->
           <p id="card-bio" class="text-[10px] text-slate-300 leading-relaxed mb-2 line-clamp-3"></p>
           <!-- Stats -->
-          <div class="flex gap-3 pt-1 border-t border-white/5">
+          <div class="flex gap-3 pt-1 border-t border-white/5 mb-2">
             <div class="text-center">
               <div id="card-followers" class="font-bold text-white text-xs"></div>
               <div class="text-slate-600 text-[9px]">Followers</div>
@@ -272,6 +273,12 @@
               <div class="text-slate-600 text-[9px]">Network links</div>
             </div>
           </div>
+          <!-- Follow on X button at bottom (same location as View on LinkedIn) -->
+          <a id="card-follow" href="#" target="_blank" rel="noopener noreferrer"
+            class="inline-flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-white/90 text-black font-semibold text-[10px] rounded-full transition-all">
+            <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.737-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            Follow on X
+          </a>
         </div>
       </div>
 
@@ -279,10 +286,12 @@
       <div id="li-card-wrapper" class="flex-1 min-w-0 bg-[#090A10]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden slide-in" style="animation-delay:0.04s">
         <div class="h-12 relative" style="background:linear-gradient(135deg,rgba(10,102,194,0.35),rgba(10,10,25,0.6))">
           <div class="absolute inset-0 bg-gradient-to-t from-[#090A10]/80 to-transparent"></div>
-          <div class="absolute top-2 left-3 flex items-center gap-1.5">
-            <svg class="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-            <span class="text-[9px] font-semibold text-[#5AAAF0] uppercase tracking-widest relative z-10">LinkedIn</span>
+          <div class="absolute top-2 left-3 flex items-center">
+            <svg class="w-3.5 h-3.5 flex-shrink-0 relative z-10" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
           </div>
+          <button id="close-card-li" class="absolute top-2 right-2 p-1 bg-black/40 hover:bg-black/60 rounded-full text-white/70 hover:text-white transition-colors z-20">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
         </div>
         <div class="px-3 pb-3">
           <!-- Avatar overflows banner with same -mt-6 as X, but on the right -->
@@ -561,7 +570,7 @@
     karpathy:        'https://www.linkedin.com/in/karpathy/',
     barmstrong:      'https://www.linkedin.com/in/barmstrong/',
     andrewng:        'https://www.linkedin.com/in/andrewyng/',
-    ylecun:          'https://www.linkedin.com/in/ylecun/',
+    ylecun:          'https://www.linkedin.com/in/yann-lecun/',
     gdb:             'https://www.linkedin.com/in/thegdb/',
     demishassabis:   'https://www.linkedin.com/in/demishassabis/',
     palmerluckey:    'https://www.linkedin.com/in/palmer-luckey-21a16959/',
@@ -1149,13 +1158,23 @@
     const extra = liExtra[p.id] || {};
     const liWrapper = document.getElementById('li-card-wrapper');
 
+    const closeBtnX = document.getElementById('close-card-x');
     if (liUrl) {
       liWrapper.classList.remove('hidden');
-      // Avatar (reuse X profile photo)
+      closeBtnX.classList.add('hidden');
+      // Avatar — fetch LinkedIn profile photo via unavatar (extracts vanity slug from URL).
+      // Chain of fallbacks: LinkedIn → Twitter (same person's X photo) → initials placeholder.
       const liAv = document.getElementById('card-li-avatar');
-      liAv.src = `https://unavatar.io/twitter/${p.handle}`;
+      const liSlugMatch = liUrl.match(/linkedin\.com\/in\/([^\/\?#]+)/);
+      const liSlug = liSlugMatch ? decodeURIComponent(liSlugMatch[1]) : null;
+      const liInitialsFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=0a3d6b&color=5aaaf0&size=128`;
+      const liTwitterFallback  = `https://unavatar.io/twitter/${p.handle}?fallback=${encodeURIComponent(liInitialsFallback)}`;
+      liAv.src = liSlug
+        ? `https://unavatar.io/linkedin/${liSlug}?fallback=${encodeURIComponent(liTwitterFallback)}`
+        : liTwitterFallback;
       liAv.onerror = () => {
-        liAv.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=0a3d6b&color=5aaaf0&size=80`;
+        liAv.onerror = null;
+        liAv.src = liInitialsFallback;
       };
       document.getElementById('card-li-name').textContent        = p.name;
       document.getElementById('card-li-headline').textContent    = p.role;
@@ -1166,6 +1185,7 @@
       document.getElementById('card-li-btn').href                = liUrl;
     } else {
       liWrapper.classList.add('hidden');
+      closeBtnX.classList.remove('hidden');
     }
 
     // ── Career Timeline (horizontal, oldest → newest left to right) ──
@@ -1362,7 +1382,8 @@
     renderSidebar();
   }
 
-  document.getElementById('close-card').addEventListener('click', closeCard);
+  document.getElementById('close-card-li').addEventListener('click', closeCard);
+  document.getElementById('close-card-x').addEventListener('click', closeCard);
 
   // ═══════════════════════════════════════════════
   // D3 FORCE GRAPH

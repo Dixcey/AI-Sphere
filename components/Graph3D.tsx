@@ -397,13 +397,13 @@ const Graph3D: React.FC<Graph3DProps> = ({ data, onNodeClick, onClearSelection, 
     const fg = graphRef.current;
     if (fg) {
       const camera = fg.camera();
-      const controls = fg.controls();
+      const controls = fg.controls() as { update?: () => void } | null;
       if (camera && controls) {
         const distance = camera.position.length();
-        const newDistance = distance * 0.7; // Zoom in by 30%
+        const newDistance = distance * 0.7;
         const direction = camera.position.clone().normalize();
         camera.position.copy(direction.multiplyScalar(newDistance));
-        controls.update();
+        controls.update?.();
       }
     }
   }, []);
@@ -412,13 +412,13 @@ const Graph3D: React.FC<Graph3DProps> = ({ data, onNodeClick, onClearSelection, 
     const fg = graphRef.current;
     if (fg) {
       const camera = fg.camera();
-      const controls = fg.controls();
+      const controls = fg.controls() as { update?: () => void } | null;
       if (camera && controls) {
         const distance = camera.position.length();
-        const newDistance = distance * 1.4; // Zoom out by 40%
+        const newDistance = distance * 1.4;
         const direction = camera.position.clone().normalize();
         camera.position.copy(direction.multiplyScalar(newDistance));
-        controls.update();
+        controls.update?.();
       }
     }
   }, []);

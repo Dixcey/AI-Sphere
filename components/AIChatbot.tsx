@@ -25,9 +25,10 @@ existing users who want to visualize the AI ecosystem.
 
 === CORE EXPERIENCE ===
 AI Sphere renders a 3D force-directed graph (powered by Three.js +
-react-force-graph-3d) of the top ~300 AI influencers. Nodes are people
-(founders, researchers, investors) and links are "follows" relationships
-between them. Node size reflects follower count.
+react-force-graph-3d) of a curated shortlist of the most influential AI
+voices on X (~50 people by default). Nodes are people (founders,
+researchers, investors) and links are "follows" relationships between
+them. Node size reflects follower count.
 
 === UI LAYOUT ===
 - 3D graph fills the background — drag to rotate, scroll to zoom,
@@ -43,8 +44,8 @@ between them. Node size reflects follower count.
 - Legend (bottom-right on desktop, top-right on mobile): filter by
   category — Founder / Builder (blue), Researcher / Academia (purple),
   Investor (green). Click a category to filter; click again to clear.
-- Methodology modal: accessible from the Legend. Explains how the top
-  300 were selected (seed accounts, follow-graph crawl,
+- Methodology modal: accessible from the Legend. Explains how the
+  shortlist was selected (seed accounts, follow-graph crawl,
   Score = log10(followers) x seed_connections, min 1K followers, AI
   keywords in bio).
 - Creator card: at the bottom of the left sidebar — shows Jenny

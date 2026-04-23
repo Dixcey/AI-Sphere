@@ -1,22 +1,14 @@
-import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import Graph3D from './components/Graph3D';
 import AIChatbot from './components/AIChatbot';
+import { ProfileCardsRow } from './components/ProfileCards';
+import CareerMobility from './components/CareerMobility';
+import SentimentEvolutionChart from './components/SentimentEvolutionChart';
+import TopicChips from './components/TopicChips';
 import { INITIAL_DATA, LAST_UPDATED } from './constants';
-import { GraphData, GraphNode, SentimentScores } from './types';
+import { GraphData, GraphLink, GraphNode, SentimentScores } from './types';
 import { analyzeSentiment } from './services/geminiService';
-import { X as XIcon, Link2, ChevronLeft, ChevronRight, Menu, Calendar, BadgeCheck, MapPin, Search, HelpCircle } from 'lucide-react';
-
-// Creator profile
-const CREATOR_PROFILE: GraphNode = {
-  id: 'jenny_the_bunny',
-  name: 'Jenny',
-  handle: 'Jenny_the_Bunny',
-  group: 'founder',
-  role: 'Creator of this page',
-  bio: 'Building cool things with AI. Creator of this AI influencer page. Let\'s be friends on X!',
-  joinedDate: 'Mar 2015 but never used until Feb 2026',
-  verified: 'blue',
-};
+import { X as XIcon, ChevronLeft, ChevronRight, Menu, Search, HelpCircle } from 'lucide-react';
 
 export default function App() {
   const [data] = useState<GraphData>(INITIAL_DATA);
@@ -27,7 +19,6 @@ export default function App() {
 
   // Selection State
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
-  const [showCreatorCard, setShowCreatorCard] = useState(false);
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
@@ -168,8 +159,17 @@ export default function App() {
     });
   }, [selectedNode?.id]);
 
-  const nodeCount = data?.nodes?.length || 0;
-  const linkCount = data?.links?.length || 0;
+  // Per-node connection counts used in the X snapshot card (Network links stat).
+  const connectionCountMap = useMemo(() => {
+    const map = new Map<string, number>();
+    data.links.forEach((link: GraphLink) => {
+      const s = typeof link.source === 'object' ? (link.source as any).id : link.source;
+      const t = typeof link.target === 'object' ? (link.target as any).id : link.target;
+      map.set(s, (map.get(s) || 0) + 1);
+      map.set(t, (map.get(t) || 0) + 1);
+    });
+    return map;
+  }, [data]);
 
   // Sentiment bar for a single dimension
   const SentimentBar = ({ label, value, leftLabel, rightLabel }: {
@@ -196,7 +196,6 @@ export default function App() {
   };
 
   const handleNodeClick = (node: GraphNode) => {
-    setShowCreatorCard(false);
     if (selectedNode?.id === node.id) {
       setSelectedNode(null);
       return;
@@ -208,37 +207,13 @@ export default function App() {
     }
   };
 
-
   const closeSelection = () => {
     setSelectedNode(null);
-    setShowCreatorCard(false);
   };
 
   const handleCategoryClick = (category: string) => {
     setSelectedCategory(prev => prev === category ? null : category);
     setSelectedNode(null);
-    setShowCreatorCard(false);
-  };
-
-  const getProfileImage = (node: GraphNode) => {
-    if (node.imageUrl) return node.imageUrl;
-    // Use Unavatar to get the Twitter/X profile picture
-    if (node.handle) return `https://unavatar.io/twitter/${node.handle}`;
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(node.name)}&background=random&color=fff&size=128`;
-  };
-
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    e.currentTarget.onerror = null; // Prevent infinite loop
-    if (selectedNode) {
-        e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedNode.name)}&background=1e293b&color=cbd5e1&size=128`;
-    }
-  };
-
-  const formatNumber = (num: number | undefined): string => {
-    if (!num) return '0';
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toString();
   };
 
   return (
@@ -333,33 +308,8 @@ export default function App() {
         </div>
 
         {/* Creator Profile */}
-        <div className="border-t border-white/10 bg-[#05060A]/50 p-2">
-          <button
-            onClick={() => {
-              setSelectedNode(null);
-              setShowCreatorCard(true);
-            }}
-            className={`w-full text-left p-3 rounded-xl flex items-center gap-3 transition-all duration-200 border ${showCreatorCard ? 'bg-indigo-600/20 border-indigo-500/50' : 'hover:bg-white/5 border-transparent'}`}
-          >
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${showCreatorCard ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
-              x
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-baseline gap-1.5 truncate">
-                <span className={`text-sm font-semibold ${showCreatorCard ? 'text-white' : 'text-slate-200'}`}>
-                  Jenny
-                </span>
-                <span className="text-xs text-slate-500 font-mono truncate">
-                  @Jenny_the_Bunny
-                </span>
-              </div>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-xs text-slate-500 truncate">
-                  Creator of this page
-                </span>
-              </div>
-            </div>
-          </button>
+        <div className="border-t border-white/10 bg-[#05060A]/50 px-4 py-3 text-center">
+          <span className="text-xs text-slate-500">Created by WoW</span>
         </div>
       </div>
 
@@ -373,192 +323,26 @@ export default function App() {
 
 
       {/* FLOATING DETAILS CARD (Replacing Right Sidebar) */}
-      {(selectedNode || showCreatorCard) && (
-        <div className={`fixed z-50 animate-in fade-in duration-300 pointer-events-none flex flex-col gap-4 ${isMobile ? 'bottom-20 left-4 right-4 w-auto' : 'top-6 right-6 w-[400px] max-w-[calc(100vw-48px)] slide-in-from-right-10'}`}>
+      {selectedNode && (
+        <div className={`fixed z-50 animate-in fade-in duration-300 pointer-events-none flex flex-col gap-2.5 overflow-y-auto details-panel-scroll ${isMobile ? 'bottom-20 left-4 right-4 max-h-[calc(100vh-160px)]' : `top-6 right-6 w-[580px] max-w-[calc(100vw-48px)] max-h-[calc(100vh-48px)] slide-in-from-right-10`}`}>
 
-            {/* Creator Card */}
-            {showCreatorCard && (
-                <div className="bg-[#090A10]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl pointer-events-auto relative overflow-hidden group">
+                {/* Row 1 — X snapshot + LinkedIn snapshot side-by-side */}
+                <ProfileCardsRow
+                    node={selectedNode}
+                    connectionCount={connectionCountMap.get(selectedNode.id) || 0}
+                    onClose={closeSelection}
+                />
 
-                    {/* Header Banner */}
-                    <div className="h-24 bg-gradient-to-br from-pink-900/50 via-slate-800/50 to-indigo-900/30 relative">
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#090A10]/80 to-transparent" />
+                {/* Row 2 — Career Mobility timeline */}
+                <CareerMobility personId={selectedNode.id} />
+
+                {/* Row 3 — AI Sentiment (Gemini) + Sentiment Evolution chart */}
+                <div className="bg-[#090A10]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl pointer-events-auto p-3.5">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-semibold text-white">AI Sentiment</h3>
+                      <span className="text-[9px] font-semibold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-1.5 py-0.5 rounded-full">Gemini</span>
                     </div>
-
-                    {/* Close Button */}
-                    <button
-                        onClick={closeSelection}
-                        className="absolute top-3 right-3 p-1.5 bg-black/40 hover:bg-black/60 rounded-full text-white/80 hover:text-white transition-colors z-20 backdrop-blur-sm"
-                    >
-                        <XIcon className="w-4 h-4" />
-                    </button>
-
-                    {/* Profile Section */}
-                    <div className="px-4 pb-4 relative">
-                        {/* Avatar - Overlapping Header */}
-                        <div className="flex justify-between items-start">
-                            <div className="relative -mt-12 mb-3">
-                                <img
-                                    src={getProfileImage(CREATOR_PROFILE)}
-                                    alt={CREATOR_PROFILE.name}
-                                    onError={(e) => {
-                                        e.currentTarget.onerror = null;
-                                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(CREATOR_PROFILE.name)}&background=1e293b&color=cbd5e1&size=128`;
-                                    }}
-                                    className="w-20 h-20 rounded-full border-4 border-[#090A10] object-cover bg-slate-800 shadow-lg"
-                                />
-                            </div>
-
-                            {/* Follow Button */}
-                            <a
-                                href={`https://x.com/${CREATOR_PROFILE.handle}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="mt-3 px-5 py-2 bg-white hover:bg-white/90 text-black font-bold text-sm rounded-full transition-all"
-                            >
-                                Follow
-                            </a>
-                        </div>
-
-                        {/* Name & Handle */}
-                        <div className="mb-3">
-                            <h2 className="text-xl font-bold text-white flex items-center gap-1.5">
-                                {CREATOR_PROFILE.name}
-                                <BadgeCheck className="w-5 h-5 text-blue-400 fill-blue-400/20" />
-                            </h2>
-                            <div className="text-slate-500 text-sm">@{CREATOR_PROFILE.handle}</div>
-                        </div>
-
-                        {/* Bio */}
-                        <p className="text-sm text-slate-200 leading-relaxed mb-3">
-                            {CREATOR_PROFILE.bio}
-                        </p>
-
-                        {/* Meta Info Row */}
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500 mb-4">
-                            <div className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
-                                <span>Joined {CREATOR_PROFILE.joinedDate}</span>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            )}
-
-            {/* Content Cards */}
-            {selectedNode && (
-                <>
-                {/* Main Profile Card - X Style */}
-                <div className="bg-[#090A10]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl pointer-events-auto relative overflow-hidden group">
-
-                    {/* Header Banner */}
-                    <div className="h-24 bg-gradient-to-br from-indigo-900/50 via-slate-800/50 to-purple-900/30 relative">
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#090A10]/80 to-transparent" />
-                    </div>
-
-                    {/* Close Button */}
-                    <button
-                        onClick={closeSelection}
-                        className="absolute top-3 right-3 p-1.5 bg-black/40 hover:bg-black/60 rounded-full text-white/80 hover:text-white transition-colors z-20 backdrop-blur-sm"
-                    >
-                        <XIcon className="w-4 h-4" />
-                    </button>
-
-                    {/* Profile Section */}
-                    <div className="px-4 pb-4 relative">
-                        {/* Avatar - Overlapping Header */}
-                        <div className="flex justify-between items-start">
-                            <div className="relative -mt-12 mb-3">
-                                <img
-                                    src={getProfileImage(selectedNode)}
-                                    alt={selectedNode.name}
-                                    onError={handleImageError}
-                                    className="w-20 h-20 rounded-full border-4 border-[#090A10] object-cover bg-slate-800 shadow-lg"
-                                />
-                            </div>
-
-                            {/* Follow Button */}
-                            {selectedNode.handle && (
-                                <a
-                                    href={`https://x.com/${selectedNode.handle}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="mt-3 px-5 py-2 bg-white hover:bg-white/90 text-black font-bold text-sm rounded-full transition-all"
-                                >
-                                    Follow
-                                </a>
-                            )}
-                        </div>
-
-                        {/* Name & Handle */}
-                        <div className="mb-3">
-                            <h2 className="text-xl font-bold text-white flex items-center gap-1.5">
-                                {selectedNode.name}
-                                {selectedNode.verified === 'gold' && <BadgeCheck className="w-5 h-5 text-amber-400 fill-amber-400/20" />}
-                                {selectedNode.verified === 'blue' && <BadgeCheck className="w-5 h-5 text-blue-400 fill-blue-400/20" />}
-                            </h2>
-                            <div className="text-slate-500 text-sm">@{selectedNode.handle}</div>
-                        </div>
-
-                        {/* Bio */}
-                        {(selectedNode.bio || selectedNode.role) && (
-                            <p className="text-sm text-slate-200 leading-relaxed mb-3">
-                                {selectedNode.bio || `${selectedNode.role}${selectedNode.associated ? ` @ ${selectedNode.associated}` : ''}`}
-                            </p>
-                        )}
-
-                        {/* Meta Info Row: Location, Website, Joined */}
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500 mb-4">
-                            {selectedNode.location && (
-                                <div className="flex items-center gap-1">
-                                    <MapPin className="w-4 h-4" />
-                                    <span>{selectedNode.location}</span>
-                                </div>
-                            )}
-                            {selectedNode.website && (
-                                <a
-                                    href={`https://${selectedNode.website}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-1 text-indigo-400 hover:underline"
-                                >
-                                    <Link2 className="w-4 h-4" />
-                                    <span>{selectedNode.website}</span>
-                                </a>
-                            )}
-                            {selectedNode.joinedDate && (
-                                <div className="flex items-center gap-1">
-                                    <Calendar className="w-4 h-4" />
-                                    <span>Joined {selectedNode.joinedDate}</span>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Following / Followers */}
-                        {(selectedNode.followers || selectedNode.following) && (
-                            <div className="flex gap-4 text-sm">
-                                {selectedNode.following !== undefined && (
-                                    <div>
-                                        <span className="font-bold text-white">{formatNumber(selectedNode.following)}</span>
-                                        <span className="text-slate-500 ml-1">Following</span>
-                                    </div>
-                                )}
-                                {selectedNode.followers !== undefined && (
-                                    <div>
-                                        <span className="font-bold text-white">{formatNumber(selectedNode.followers)}</span>
-                                        <span className="text-slate-500 ml-1">Followers</span>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Sentiment Analysis Card */}
-                <div className="bg-[#090A10]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl pointer-events-auto p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-semibold text-white">AI Sentiment Analysis</h3>
                     {sentimentLoading && (
                       <div className="flex items-center gap-1.5">
                         <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -575,7 +359,7 @@ export default function App() {
                   {sentimentScores && (
                     <>
                       {/* AI Trends badge */}
-                      <div className="flex items-center gap-2 mb-4">
+                      <div className="flex items-center gap-2 mb-3">
                         <span className="text-xs text-slate-400">AI Trends Outlook:</span>
                         <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                           sentimentScores.trends === 'optimistic'
@@ -619,9 +403,13 @@ export default function App() {
                   {!sentimentLoading && !sentimentScores && (
                     <p className="text-xs text-slate-500 italic">No API key configured for sentiment analysis.</p>
                   )}
+
+                  {/* Sentiment evolution across career (static curated data) */}
+                  <SentimentEvolutionChart personId={selectedNode.id} />
                 </div>
-                </>
-            )}
+
+                {/* Row 4 — AI Topics chips */}
+                <TopicChips topics={selectedNode.bioTags} />
 
         </div>
       )}
@@ -696,7 +484,7 @@ export default function App() {
               <div>
                 <h3 className="text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-1">Discovery & Selection</h3>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  Starting from <span className="text-white font-medium">seed accounts</span> (OpenAI, Anthropic, DeepMind, top researchers), we crawl who they follow to find AI voices. If multiple trusted sources follow someone, they matter. The top 300 are selected using:
+                  Starting from <span className="text-white font-medium">seed accounts</span> (OpenAI, Anthropic, DeepMind, top researchers), we crawl who they follow to find AI voices. If multiple trusted sources follow someone, they matter. The shortlist is then scored by:
                 </p>
                 <div className="bg-slate-800/50 border border-white/10 rounded-md px-2.5 py-1.5 font-mono text-xs text-white mt-1.5 mb-1">
                   Score = log<sub>10</sub>(followers) x seed_connections
@@ -745,6 +533,10 @@ export default function App() {
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: rgba(255, 255, 255, 0.2);
         }
+        .details-panel-scroll { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.12) transparent; }
+        .details-panel-scroll::-webkit-scrollbar { width: 4px; }
+        .details-panel-scroll::-webkit-scrollbar-track { background: transparent; }
+        .details-panel-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 4px; }
         @keyframes moveRight {
           0% { left: -6px; }
           100% { left: calc(100% + 6px); }

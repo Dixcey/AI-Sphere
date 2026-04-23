@@ -6,7 +6,104 @@ import { GraphData } from "./types";
 
 export const LAST_UPDATED = "February 11, 2026";
 
-export const INITIAL_DATA: GraphData = {
+/**
+ * Curated 51-person shortlist that matches the `preview.html` static
+ * demo one-for-one. This is the default list the React app renders so
+ * the live site and the GitHub Pages preview stay visually consistent.
+ *
+ * IDs here are the same lowercase Twitter handles used as `node.id`
+ * elsewhere in this file. The full crawl of ~300 influencers is still
+ * exported as `ALL_INITIAL_DATA` for anyone who wants the larger graph.
+ */
+export const PREVIEW_INFLUENCER_IDS: readonly string[] = [
+  'sama',
+  'satyanadella',
+  'levie',
+  'karpathy',
+  'brian_armstrong',
+  'andrewyng',
+  'ylecun',
+  'gdb',
+  'demishassabis',
+  'palmerluckey',
+  'fchollet',
+  'ilyasut',
+  'drfeifei',
+  'geoffreyhinton',
+  'paraga',
+  '_akhaliq',
+  'austen',
+  'miramurati',
+  'jeffdean',
+  'rasbt',
+  'hardmaru',
+  'alexandr_wang',
+  'addyosmani',
+  'goodfellow_ian',
+  'drjimfan',
+  'minchoi',
+  'deryatr_',
+  'emostaque',
+  'sriramk',
+  'omarsar0',
+  'soumithchintala',
+  'officiallogank',
+  'jeremyphoward',
+  'steipete',
+  'tunguz',
+  'bcherny',
+  'mustafasuleyman',
+  'gavinsbaker',
+  'esyudkowsky',
+  'yacinemtb',
+  'kazu_fujisawa',
+  'oriolvinyalsml',
+  'clementdelangue',
+  'aelluswamy',
+  'schmidhuberai',
+  'goodside',
+  'mitchellh',
+  'darioamodei',
+  'arankomatsuzaki',
+  'chrmanning',
+  'elonmusk',
+];
+
+/**
+ * Extra nodes + links that aren't in the crawled `ALL_INITIAL_DATA` but
+ * exist in the `preview.html` hand-curated dataset. Right now this is
+ * just Elon Musk plus the handful of inbound/outbound follows the
+ * preview shows him having.
+ */
+const PREVIEW_PATCH_NODES = [
+  {
+    id: 'elonmusk',
+    name: 'Elon Musk',
+    group: 'founder' as const,
+    role: 'CEO at xAI / Tesla / SpaceX',
+    handle: 'elonmusk',
+    associated: 'xAI',
+    verified: 'gold' as const,
+    joinedDate: 'Jun 2009',
+    bioTags: ['xAI', 'AGI', 'Grok', 'Robots'],
+    bio: 'CEO of xAI, Tesla, SpaceX. Building Grok. Most followed person on X.',
+    followers: 170000000,
+    following: 1000,
+    location: 'Austin, TX',
+    website: 'https://x.ai',
+    imageUrl: 'https://unavatar.io/twitter/elonmusk',
+  },
+];
+
+const PREVIEW_PATCH_LINKS = [
+  { source: 'elonmusk',    target: 'sama' },
+  { source: 'elonmusk',    target: 'karpathy' },
+  { source: 'elonmusk',    target: 'aelluswamy' },
+  { source: 'karpathy',    target: 'elonmusk' },
+  { source: 'palmerluckey', target: 'elonmusk' },
+];
+
+export const ALL_INITIAL_DATA: GraphData = {
   nodes: [
     {
         "id": "openai",
@@ -17596,4 +17693,30 @@ export const INITIAL_DATA: GraphData = {
         "target": "agarwl_"
     }
 ]
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Default graph: filtered to the 51-person preview shortlist.
+// Links are restricted to those where both endpoints are in the shortlist.
+// Any preview person missing from `ALL_INITIAL_DATA` (e.g. Elon Musk) is
+// contributed via PREVIEW_PATCH_NODES / PREVIEW_PATCH_LINKS.
+// ─────────────────────────────────────────────────────────────────────────────
+const PREVIEW_ID_SET = new Set<string>(PREVIEW_INFLUENCER_IDS);
+
+const _filteredNodes = ALL_INITIAL_DATA.nodes.filter(n => PREVIEW_ID_SET.has(n.id));
+const _existingIds = new Set(_filteredNodes.map(n => n.id));
+const _patchNodes = PREVIEW_PATCH_NODES.filter(n => PREVIEW_ID_SET.has(n.id) && !_existingIds.has(n.id));
+
+const _filteredLinks = ALL_INITIAL_DATA.links.filter(l => {
+    const s = typeof l.source === 'object' ? (l.source as { id: string }).id : l.source;
+    const t = typeof l.target === 'object' ? (l.target as { id: string }).id : l.target;
+    return PREVIEW_ID_SET.has(s) && PREVIEW_ID_SET.has(t);
+});
+const _patchLinks = PREVIEW_PATCH_LINKS.filter(l =>
+    PREVIEW_ID_SET.has(l.source) && PREVIEW_ID_SET.has(l.target)
+);
+
+export const INITIAL_DATA: GraphData = {
+    nodes: [..._filteredNodes, ..._patchNodes],
+    links: [..._filteredLinks, ..._patchLinks],
 };

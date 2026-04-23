@@ -41,6 +41,29 @@ export interface SentimentScores {
   agent: number;       // -1 (skeptical) to 1 (bullish)
 }
 
+// LinkedIn extras (connections + location) keyed by influencer id
+export interface LinkedInExtra {
+  connections: string;
+  location: string;
+}
+
+// A single career stage in a person's timeline.
+// y = year range (e.g., "2019–"), r = role/title, c = company.
+export interface CareerStage {
+  y: string;
+  r: string;
+  c: string;
+}
+
+// Inferred sentiment per career stage — array is ordered newest→oldest,
+// matching the ordering used in `careerHistory`.
+export interface SentimentStage {
+  reg: number; // regulation
+  use: number; // AI usage
+  tru: number; // trust
+  age: number; // AI agents
+}
+
 export interface InfluencerResponse {
   newNodes: Array<{ 
     name: string; 
